@@ -1,9 +1,8 @@
 name: App
 
-# Typecheck, tests and the production build on every PR into main.
+# Typecheck, tests and the production build on every PR.
 on:
   pull_request:
-    branches: [main]
 
 jobs:
   app:
