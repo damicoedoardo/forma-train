@@ -1,0 +1,12 @@
+node_modules
+.next
+out
+.vercel
+*.tsbuildinfo
+next-env.d.ts
+.env*.local
+sim-out
+
+# Server settings (docker-compose.yml); the template is .env.example
+.env
+/icons-sheet.png
