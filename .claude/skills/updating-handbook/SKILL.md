@@ -31,7 +31,13 @@ config has no row: give a new folder its row (and a page if no page fits).
 |---|---|
 | `src/app/**` | `architecture/structure.md`, `product/overview.md` |
 | `src/ui/**`, `tailwind.config.ts`, `postcss.config.js` | `ui/look.md` |
-| `src/platform/**` | `architecture/structure.md` |
+| `src/platform/**` | `architecture/structure.md`, `features/account.md` |
+| `src/features/training/**` | `features/training.md` |
+| `src/features/coach/**` | `features/coach.md` |
+| `src/features/exercises/**` | `features/exercises.md` |
+| `src/features/account/**` | `features/account.md` |
+| `backend/app/coach.py` | `features/coach.md`, `backend/api.md` |
+| `backend/**` | `backend/api.md` |
 | `public/**` | `architecture/structure.md` |
 | `package.json`, `tsconfig.json`, `vitest.config.ts`, `next.config.ts`, `.github/workflows/app.yml` | `dev/workflow.md` |
 | `scripts/handbook.mjs`, `.githooks/**`, `.github/workflows/handbook.yml`, `.claude/**` | `dev/handbook.md` |
