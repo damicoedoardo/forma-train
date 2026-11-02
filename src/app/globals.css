@@ -1,0 +1,22 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root { color-scheme: dark; }
+html, body { background: #0D0E12; color: #ECECEF; }
+body { -webkit-tap-highlight-color: transparent; overscroll-behavior: none; }
+
+@layer components {
+  /* The one surface: frosted glass over the base and its glow. */
+  .glass {
+    background: rgba(255, 255, 255, 0.045);
+    border: 1px solid rgba(255, 255, 255, 0.065);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+  .hairline { border-color: rgba(255, 255, 255, 0.07); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
