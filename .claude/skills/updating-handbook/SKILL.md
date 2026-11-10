@@ -41,7 +41,7 @@ config has no row: give a new folder its row (and a page if no page fits).
 | `backend/app/routes/{friends,cheers,feed}.py` | `features/social.md`, `backend/api.md` |
 | `backend/**` | `backend/api.md` |
 | `public/**` | `architecture/structure.md` |
-| `package.json`, `tsconfig.json`, `vitest.config.ts`, `next.config.ts`, `.github/workflows/app.yml`, `.github/workflows/backend.yml` | `dev/workflow.md` |
+| `package.json`, `tsconfig.json`, `vitest.config.ts`, `next.config.ts`, `vercel.json`, `.github/workflows/app.yml`, `.github/workflows/backend.yml` | `dev/workflow.md` |
 | `scripts/handbook.mjs`, `.githooks/**`, `.github/workflows/handbook.yml`, `.claude/**` | `dev/handbook.md` |
 
 Also update `product/overview.md` for any change a user would notice, and
