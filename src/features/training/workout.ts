@@ -60,6 +60,14 @@ export function lastTime(state: Pick<TrainingState, 'sessions'>, id: string): nu
   return entry?.sets.length ? Math.max(...entry.sets.map((x) => x.reps)) : null;
 }
 
+/** A set that beats your best: more than the best set last time, and more than any set today.
+    Nothing to beat the first time you do an exercise. */
+export function beatsBest(state: Pick<TrainingState, 'sessions' | 'draft'>, id: string, reps: number): boolean {
+  const last = lastTime(state, id);
+  if (last === null) return false;
+  return reps > Math.max(last, ...setsOf(state, id).map((x) => x.reps));
+}
+
 /** Where a set starts on the counter: what you did in the last set, else the target. */
 export const startReps = (state: TrainingState, q: WorkoutExercise) => setsOf(state, q.id).at(-1)?.reps ?? q.reps;
 

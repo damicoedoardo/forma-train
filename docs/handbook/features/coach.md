@@ -21,7 +21,8 @@ tools.
 - **Laws** (`laws.ts`, `validate.ts`): the few rules every saved workout must keep (warm-up
   first, never to failure, nothing on a sore spot, set caps, a rest day every week, and more).
   A tool that would break one answers "Not saved".
-- **Week** (`week.ts`, `plan.ts`): this week and next, Monday to Sunday. A day without a workout
+- **Week** (`week.ts`, `plan.ts`): this week and next, Monday to Sunday. `weekRing` counts this
+  week's workouts done of planned, for the ring on Today. A day without a workout
   is a rest day; `restKept` reads `state.rested`.
 - **Brief** (`brief.ts`, `notes.ts`, `nudge.ts`, `feedback.ts`): one short plain-text page about
   the person, rebuilt from the save on every message.

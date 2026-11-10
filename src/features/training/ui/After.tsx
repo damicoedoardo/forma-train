@@ -66,7 +66,7 @@ export function After({ state, session, title, startedAt, update, onDone, onShar
             const heavier = session.heavier?.includes(id);
             return (
               <span key={id} className="glass flex h-9 items-center gap-1.5 rounded-pill px-3.5 text-[14px] text-ink-soft">
-                {e?.name ?? id} <span className="text-accent-soft">{heavier ? '+kg' : '↑'}</span>
+                {e?.name ?? id} <span className="text-win">{heavier ? '+kg' : '↑'}</span>
               </span>
             );
           })}

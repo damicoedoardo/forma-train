@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { finishSession, initialState, todaysWorkout, type TrainingState } from './session';
-import { clockText, currentIndex, doseText, dropWorkout, lastTime, leaveWorkout, logSet, setCount, setsWanted, skipRest, startReps, startWorkout, undoSet } from './workout';
+import { beatsBest, clockText, currentIndex, doseText, dropWorkout, lastTime, leaveWorkout, logSet, setCount, setsWanted, skipRest, startReps, startWorkout, undoSet } from './workout';
 
 const NOW = new Date('2026-11-10T18:00:00Z');
 const fresh = (): TrainingState => ({ ...initialState(), profile: { onboarded: true, kit: 'home' } });
@@ -42,6 +42,13 @@ describe('a workout under way', () => {
     const done = finishSession(s, NOW)!.state;
     expect(lastTime(done, q.id)).toBe(q.reps + 2);
     expect(lastTime(done, 'nothing')).toBeNull();
+    // A best: more than last time and more than any set today. Nothing to beat the first time.
+    expect(beatsBest(done, q.id, q.reps + 2)).toBe(false);
+    expect(beatsBest(done, q.id, q.reps + 3)).toBe(true);
+    expect(beatsBest(done, 'nothing', 99)).toBe(false);
+    const again = logSet(startWorkout(done, new Date()), q.id, { reps: q.reps + 4, rir: '2-3' }, new Date());
+    expect(beatsBest(again, q.id, q.reps + 4)).toBe(false);
+    expect(beatsBest(again, q.id, q.reps + 5)).toBe(true);
   });
 
   it('reads short', () => {

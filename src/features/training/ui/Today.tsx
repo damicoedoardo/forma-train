@@ -1,7 +1,7 @@
 'use client';
 
-import { Avatar, Button, Glass } from '@/ui';
-import { currentPlan, isRestToday, restKept, todayIs, weekSlots, weekdayOf } from '@/features/coach/week';
+import { Avatar, Button, Glass, Ring } from '@/ui';
+import { currentPlan, isRestToday, restKept, todayIs, weekRing, weekSlots, weekdayOf } from '@/features/coach/week';
 import { freshNudge, coachNudge } from '@/features/coach/nudge';
 import { minutesOf } from '@/features/coach/validate';
 import { shortTitle, titleKind } from '@/features/coach/title';
@@ -9,7 +9,7 @@ import { dayKey } from '../days';
 import { dayType, isTap, todaysWorkout, type TrainingState, type WorkoutExercise } from '../session';
 import { doseText, setCount } from '../workout';
 
-/* Today: the date, the workout, the week at a glance, the coach's one line, and Start. */
+/* Today: the date, the workout, the week as a ring and at a glance, the coach's one line, and Start. */
 
 const DATE = new Intl.DateTimeFormat('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
 
@@ -25,6 +25,7 @@ export function Today({ state, now, photo, onStart, onRest, onYou, onCoach }: { 
   const minutes = plan ? minutesOf(plan.items.filter((i) => !i.skipped)) : null;
   const line = freshNudge(state, now) ?? coachNudge(state, now);
   const ahead = day.kind === 'done' || (rest && !going);
+  const ring = weekRing(state.coach?.week, now);
 
   return (
     <>
@@ -35,18 +36,28 @@ export function Today({ state, now, photo, onStart, onRest, onYou, onCoach }: { 
         </button>
       </div>
 
-      <div className="mt-10 flex flex-col gap-1.5">
-        {ahead ? (
-          <>
-            <span className="text-[15px] text-ink-muted">{day.kind === 'done' ? 'Done today' : kept ? 'Rested' : 'Rest day'}</span>
-            <h1 className="font-display text-[40px] font-medium leading-[44px] tracking-[-1.2px]">{day.next ? `Next: ${weekdayOf(day.next.date)}` : 'Week done'}</h1>
-            {day.next && <span className="text-[15px] text-ink-muted">{shortTitle(day.next.plan.title)}</span>}
-          </>
-        ) : (
-          <>
-            <h1 className="font-display text-[40px] font-medium leading-[44px] tracking-[-1.2px]">{shortTitle(title)}</h1>
-            <span className="text-[15px] text-ink-muted">{[titleKind(title), minutes ? `${minutes} min` : null, `${moves.length} moves`].filter(Boolean).join(' · ')}</span>
-          </>
+      <div className="mt-10 flex items-center justify-between gap-4">
+        <div className="flex min-w-0 flex-col gap-1.5">
+          {ahead ? (
+            <>
+              <span className="text-[15px] text-ink-muted">{day.kind === 'done' ? 'Done today' : kept ? 'Rested' : 'Rest day'}</span>
+              <h1 className="font-display text-[40px] font-medium leading-[44px] tracking-[-1.2px]">{day.next ? `Next: ${weekdayOf(day.next.date)}` : 'Week done'}</h1>
+              {day.next && <span className="text-[15px] text-ink-muted">{shortTitle(day.next.plan.title)}</span>}
+            </>
+          ) : (
+            <>
+              <h1 className="font-display text-[40px] font-medium leading-[44px] tracking-[-1.2px]">{shortTitle(title)}</h1>
+              <span className="text-[15px] text-ink-muted">{[titleKind(title), minutes ? `${minutes} min` : null, `${moves.length} moves`].filter(Boolean).join(' · ')}</span>
+            </>
+          )}
+        </div>
+        {ring && (
+          <Ring size={68} stroke={5} of={ring.of} done={ring.done} now={day.kind === 'workout'} label={`${ring.done} of ${ring.of} workouts this week`}>
+            <span className="num font-display text-[17px] leading-none">
+              {ring.done}
+              <span className="text-ink-faint">/{ring.of}</span>
+            </span>
+          </Ring>
         )}
       </div>
 

@@ -4,7 +4,7 @@ import { seeded } from '@/platform/random';
 import { finishSession, initialState, todaysWorkout, type TrainingState } from '@/features/training/session';
 import { applySetup, type SetupAnswers } from './setup';
 import { runTool, resolveDay, type ToolContext } from './tools';
-import { buildWeek, currentPlan, daysIn, needsPlan, planAhead, shownWeek, weekDoneId, dayLabel, markDone, nextDay, isRestToday, restKept, restToday, setDay, startsToday, todayIs, weekDates, weekOver, weekSlots, weekTally, weekText } from './week';
+import { buildWeek, currentPlan, daysIn, needsPlan, planAhead, shownWeek, weekDoneId, dayLabel, markDone, nextDay, isRestToday, restKept, restToday, setDay, startsToday, todayIs, weekDates, weekOver, weekRing, weekSlots, weekTally, weekText } from './week';
 import { coachNudge, freshNudge, hearNudge } from './nudge';
 import { coachBrief } from './brief';
 import { changeItem } from './plan';
@@ -177,6 +177,10 @@ describe('the week', () => {
     expect(weekTally(undefined, NOW, 5, 3)).toEqual({ done: 3, goal: 3 });
     const old = withWeek(answers({ days: 2 })).coach!.week!;
     expect(weekTally(old, new Date(2026, 10, 9, 12), 1, 3)).toEqual({ done: 1, goal: 3 });
+    // The ring on Today: the same count, and no ring with no week.
+    expect(weekRing(old, NOW)).toEqual({ done: 0, of: 2 });
+    expect(weekRing(old, new Date(2026, 10, 9, 12))).toBeNull();
+    expect(weekRing(undefined, NOW)).toBeNull();
   });
 
 });

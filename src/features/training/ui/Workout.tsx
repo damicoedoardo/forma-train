@@ -1,15 +1,18 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Check, Play, Undo2, X } from 'lucide-react';
 import { Avatar, Button, Glass, Ring, Screen, Segmented } from '@/ui';
 import { useNow } from '@/platform/useNow';
+import { useWakeLock } from '@/platform/useWakeLock';
+import { armChime, chime } from '@/platform/chime';
 import { videoOf, videoSearchUrl, videoWatchUrl } from '@/features/exercises/videos';
 import { clockStart, isTap, REST_SECONDS, todaysWorkout, type Rir, type TrainingState } from '../session';
-import { clockText, currentIndex, FEEL, lastTime, logSet, restFor, setCount, setsOf, setsWanted, skipRest, startReps, undoSet } from '../workout';
+import { beatsBest, clockText, currentIndex, FEEL, lastTime, logSet, restFor, setCount, setsOf, setsWanted, skipRest, startReps, undoSet } from '../workout';
 
 /* The workout: one exercise at a time, a big counter, how it felt, Log set. A rest clock after
-   each set. A friend's cheer shows on top. */
+   each set, with a buzz and a chime when it ends. A set that beats your best gets a moment. The
+   screen stays on. A friend's cheer shows on top. */
 
 export interface CheerLine {
   id: string;
@@ -32,6 +35,10 @@ export function Workout({ state, update, onFinish, onLeave, onDrop, cheer, onChe
   const count = setCount(state, workout);
   // How long this rest was set for, to draw how much is left.
   const [restTotal, setRestTotal] = useState(0);
+  // The set just logged beat your best: its reps, shown over the rest clock.
+  const [best, setBest] = useState<number | null>(null);
+  const resting = useRef(false);
+  useWakeLock();
 
   // A new exercise or set: the counter starts from where you are.
   const key = q ? `${q.id}:${setsOf(state, q.id).length}` : 'done';
@@ -53,9 +60,22 @@ export function Workout({ state, update, onFinish, onLeave, onDrop, cheer, onChe
     if (allDone) onFinish();
   }, [allDone, onFinish]);
 
-  // The rest clock ran out: clear it.
+  // The rest clock ran out: say so, and clear it. (Skipped by hand, it ends quietly.)
   useEffect(() => {
-    if (draft?.restUntil && restLeft <= 0) update(skipRest);
+    if (!draft?.restUntil) {
+      resting.current = false;
+      return;
+    }
+    if (restLeft > 0) {
+      resting.current = true;
+      return;
+    }
+    if (resting.current) {
+      navigator.vibrate?.([70, 60, 70]);
+      chime();
+    }
+    resting.current = false;
+    update(skipRest);
   }, [draft?.restUntil, restLeft, update]);
 
   if (!draft) return null;
@@ -67,7 +87,10 @@ export function Workout({ state, update, onFinish, onLeave, onDrop, cheer, onChe
     const lastOfAll = at === workout.length - 1 && setsOf(state, q.id).length + 1 >= setsWanted(q);
     const rest = tap || lastOfAll ? 0 : restFor(q, REST_SECONDS);
     setRestTotal(rest);
-    navigator.vibrate?.(12);
+    const record = !tap && beatsBest(state, q.id, reps);
+    setBest(record ? reps : null);
+    navigator.vibrate?.(record ? [12, 70, 28] : 12);
+    armChime();
     update((s) => logSet(s, q.id, { reps: tap ? q.reps : reps, rir: tap ? '2-3' : feel }, new Date(), rest));
   };
 
@@ -79,6 +102,7 @@ export function Workout({ state, update, onFinish, onLeave, onDrop, cheer, onChe
   const done = q ? setsOf(state, q.id).length : 0;
   const last = q ? lastTime(state, q.id) : null;
   const unit = q?.unit === 'sec' ? 's' : '';
+  const ahead = !!q && !isTap(q) && beatsBest(state, q.id, reps);
 
   return (
     <Screen tabs={false} glow="left-[-15px] top-[120px]" view={restLeft > 0 ? 'rest' : (q?.id ?? 'end')}>
@@ -108,8 +132,17 @@ export function Workout({ state, update, onFinish, onLeave, onDrop, cheer, onChe
       {restLeft > 0 ? (
         <div className="flex flex-1 flex-col items-center">
           <span className="mt-14 text-[15px] text-ink-muted">Rest</span>
-          <Ring className="mt-6" value={restLeft / Math.max(restTotal, restLeft, 1)} label={`Rest, ${restLeft} seconds left`}>
-            <span className="num font-display text-[72px] font-normal leading-[76px] tracking-[-2.5px]">{clockText(restLeft * 1000)}</span>
+          <Ring className="mt-6" value={restLeft / Math.max(restTotal, restLeft, 1)} flash={best !== null} label={`Rest, ${restLeft} seconds left`}>
+            <span key={restLeft <= 3 ? restLeft : 'rest'} className={`num font-display text-[72px] font-normal leading-[76px] tracking-[-2.5px] ${restLeft <= 3 ? 'pop' : ''}`}>
+              {clockText(restLeft * 1000)}
+            </span>
+            {best !== null && (
+              <span className="mt-1 flex items-center gap-2 text-[13px] text-ink-soft">
+                <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-win shadow-[0_0_8px_rgba(233,184,114,0.7)]" />
+                New best: {best}
+                {unit}
+              </span>
+            )}
           </Ring>
           {q && <span className="mt-6 text-[14px] text-ink-faint">Next: {q.name}</span>}
           <Button kind="glass" className="mt-auto w-full" onClick={() => update(skipRest)}>
@@ -137,11 +170,11 @@ export function Workout({ state, update, onFinish, onLeave, onDrop, cheer, onChe
                   −
                 </button>
                 <Ring size={232} of={q.sets} done={done} label={`Set ${done + 1} of ${q.sets}`}>
-                  <span key={reps} className="pop num font-display text-[104px] font-normal leading-[104px] tracking-[-4px]">
+                  <span key={reps} className={`pop num font-display text-[104px] font-normal leading-[104px] tracking-[-4px] ${ahead ? 'best-num' : ''}`}>
                     {reps}
                     {unit && <span className="text-[40px] tracking-normal text-ink-muted">{unit}</span>}
                   </span>
-                  <span className="text-[13px] text-ink-faint">{last !== null ? `last ${last}${unit}` : `target ${q.reps}${unit}`}</span>
+                  <span className={`text-[13px] ${ahead ? 'text-win-soft' : 'text-ink-faint'}`}>{ahead ? `last ${last}${unit} · +${reps - (last ?? 0)}` : last !== null ? `last ${last}${unit}` : `target ${q.reps}${unit}`}</span>
                 </Ring>
                 <button type="button" aria-label="One more" onClick={() => setReps((r) => r + (q.unit === 'sec' ? 5 : 1))} className="glass press h-[52px] w-[52px] shrink-0 rounded-full text-[24px]">
                   +
