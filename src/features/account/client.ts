@@ -1,4 +1,4 @@
-import { api, supabase } from '@/platform/api';
+import { api, CLOUD_START, supabase } from '@/platform/api';
 import type { TrainingState } from '@/features/training/session';
 import type { CloudCopy } from './cloud';
 
@@ -10,6 +10,8 @@ import type { CloudCopy } from './cloud';
 export interface CloudStatus {
   /** Signed in as (null: signed out). */
   email: string | null;
+  /** The signed-in account's id, to tell your own posts and cards. */
+  userId?: string | null;
   signedIn: boolean;
   phase: 'idle' | 'saving' | 'saved' | 'offline' | 'error';
   savedAt?: string;
@@ -91,13 +93,17 @@ export async function deleteCloud(): Promise<void> {
 // ---------- signing in and out ----------
 
 const back = () => `${window.location.origin}/`;
+/** Wake the sign-in watcher (useCloudSync) before signing in. */
+const wake = () => window.dispatchEvent(new Event(CLOUD_START));
 
 export async function signInWithGoogle(): Promise<string | null> {
+  wake();
   const { error } = await (await supabase()).auth.signInWithOAuth({ provider: 'google', options: { redirectTo: back() } });
   return error?.message ?? null;
 }
 
 export async function signInWithEmail(email: string): Promise<string | null> {
+  wake();
   const { error } = await (await supabase()).auth.signInWithOtp({ email, options: { emailRedirectTo: back() } });
   return error?.message ?? null;
 }
@@ -105,6 +111,7 @@ export async function signInWithEmail(email: string): Promise<string | null> {
 /** Sign in with the code from the email: the way in on an installed iPhone app, where the
     email's link would open Safari instead. */
 export async function verifyEmailCode(email: string, code: string): Promise<string | null> {
+  wake();
   const { error } = await (await supabase()).auth.verifyOtp({ email, token: code, type: 'email' });
   return error?.message ?? null;
 }

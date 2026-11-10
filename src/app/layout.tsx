@@ -10,6 +10,7 @@ export const metadata: Metadata = {
   applicationName: 'Forma',
   appleWebApp: { capable: true, title: 'Forma', statusBarStyle: 'black-translucent' },
   formatDetection: { telephone: false },
+  icons: { icon: '/icon-192.png', apple: '/apple-touch-icon.png' },
 };
 
 export const viewport: Viewport = {

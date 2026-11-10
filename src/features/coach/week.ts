@@ -85,6 +85,14 @@ export function weekTally(week: CoachWeek | null | undefined, now: Date, session
   return { done: mine.filter((d) => d.done).length, goal: mine.length };
 }
 
+/** The week as a ring: the workouts planned this week, and how many are done. Null with
+    no week planned. */
+export function weekRing(week: CoachWeek | null | undefined, now: Date): { done: number; of: number } | null {
+  if (!week || weekOver(week, now)) return null;
+  const mine = daysIn(week, 0);
+  return mine.length ? { done: mine.filter((d) => d.done).length, of: mine.length } : null;
+}
+
 /** The nudge id of "this week is done, next week is ready", one per week. */
 export const weekDoneId = (week: CoachWeek) => `weekdone:${dayKey(nextMonday(week))}`;
 

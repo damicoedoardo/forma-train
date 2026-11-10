@@ -3,7 +3,7 @@ import type { ButtonHTMLAttributes } from 'react';
 type Kind = 'primary' | 'glass';
 
 const KIND: Record<Kind, string> = {
-  primary: 'bg-ink text-base',
+  primary: 'btn-primary text-base',
   glass: 'glass text-ink',
 };
 
@@ -12,7 +12,7 @@ export function Button({ kind = 'primary', className = '', ...rest }: ButtonHTML
   return (
     <button
       type="button"
-      className={`flex h-14 items-center justify-center gap-2 rounded-pill px-6 text-[17px] font-medium transition-opacity active:opacity-80 disabled:opacity-40 ${KIND[kind]} ${className}`}
+      className={`flex h-14 items-center justify-center gap-2 rounded-pill px-6 text-[17px] font-medium press disabled:opacity-40 ${KIND[kind]} ${className}`}
       {...rest}
     />
   );

@@ -1,6 +1,7 @@
 import { dayKey } from '@/features/training/days';
 import type { TrainingState } from '@/features/training/session';
 import { minutesOf } from './validate';
+import { shortTitle } from './title';
 import { daysIn, dayLabel, nextDay, restKept, restToday, shownWeek, weekDoneId, weekdayOf } from './week';
 
 /* The coach speaks first: one thing worth saying now (a missed day, a new week, a rest day to
@@ -31,8 +32,8 @@ export function coachNudge(state: TrainingState, now: Date): Nudge | undefined {
     return { id: `week:${week.start}`, text: `New week: ${daysIn(week, 0).map((d) => weekdayOf(d.date)).join(', ')}, rest days between. Want to change anything?` };
   if (restToday(coach, now) && !restKept(state, today) && !doneToday)
     return { id: `rest:${today}`, text: 'Rest day. Recovery is part of the plan.' };
-  if (doneToday) return { id: `done:${today}`, text: next ? `Good work. Next: ${dayLabel(next.date, now) === 'Tomorrow' ? 'tomorrow' : weekdayOf(next.date)}, ${next.plan.title}.` : 'Week done. Keep your rest days: they count too.' };
-  if (next && next.date === today) return { id: `today:${today}`, text: `Today: ${next.plan.title}, about ${minutesOf(next.plan.items)} min.` };
+  if (doneToday) return { id: `done:${today}`, text: next ? `Good work. Next: ${dayLabel(next.date, now) === 'Tomorrow' ? 'tomorrow' : weekdayOf(next.date)}, ${shortTitle(next.plan.title).toLowerCase()}.` : 'Week done. Keep your rest days: they count too.' };
+  if (next && next.date === today) return { id: `today:${today}`, text: `Today: ${shortTitle(next.plan.title).toLowerCase()}, about ${minutesOf(next.plan.items)} min.` };
   return undefined;
 }
 

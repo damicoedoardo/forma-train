@@ -40,3 +40,18 @@ export async function api(method: 'GET' | 'PUT' | 'POST' | 'DELETE', path: strin
     throw new Offline('No connection');
   }
 }
+
+/** This phone may hold a sign-in (a Supabase token is stored, or one is coming back in the
+    address), so the cloud is worth starting. Keeps Supabase unloaded for people who never signed in. */
+export function maybeSignedIn(): boolean {
+  if (!cloudConfigured || typeof window === 'undefined') return false;
+  if (/[?&#](code|access_token|error_description)=/.test(window.location.href)) return true;
+  try {
+    return Object.keys(localStorage).some((k) => k.startsWith('sb-') && k.endsWith('-auth-token'));
+  } catch {
+    return false;
+  }
+}
+
+/** Said on the window right before a sign-in starts, so the sign-in watcher loads. */
+export const CLOUD_START = 'train-cloud-start';
