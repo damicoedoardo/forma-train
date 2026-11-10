@@ -97,3 +97,10 @@ export function answersOf(p: CoachProfile | undefined): SetupAnswers {
     avoidText: p.avoid.find((x) => x.text)?.text,
   };
 }
+
+/** The short setup on first open: what you train, why, how often and long, and with what. The
+    rest starts in the middle (levels unknown, no sore spots); the coach learns it from the log and
+    the chat. */
+export function quickAnswers(a: Pick<SetupAnswers, 'modes' | 'goal' | 'days' | 'minutes' | 'gear'>): SetupAnswers {
+  return { ...a, experience: 'on-off', pushups: null, pullups: null, lifts: null, run: null, avoid: [] };
+}

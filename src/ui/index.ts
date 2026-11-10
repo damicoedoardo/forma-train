@@ -5,3 +5,6 @@ export type { Option } from './Segmented';
 export { Glow } from './Glow';
 export { TabBar } from './TabBar';
 export type { Tab } from './TabBar';
+export { Avatar } from './Avatar';
+export { Stats } from './Stats';
+export { Screen, Label, Chip } from './Screen';

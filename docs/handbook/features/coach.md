@@ -3,7 +3,7 @@ type: conceptual
 title: Coach
 description: How the coach plans and talks — setup, the built-in planner, the laws, the week, the brief sent to the LLM, the phone-side tools and the chat relay.
 tags: [coach, llm, planner, laws, brief, tools]
-timestamp: 2026-11-02
+timestamp: 2026-11-10
 ---
 
 # Coach
@@ -29,6 +29,13 @@ tools.
   chat to `POST /coach`; tool calls come back and run on the phone (`runTool`), and their
   results go out with the next call.
 - **Numbers** (`config.ts`): rest, ramp, time and cool-down defaults.
+- **Titles** (`title.ts`): `shortTitle` ("Pull, push, squat") and `titleKind` ("Calisthenics")
+  split a built-in title for screens.
+- **Screens** (`ui/`): `Setup.tsx` is the first open, six questions (name, what you train, what
+  for, days, minutes, gear) into `quickAnswers` and `applySetup`; the rest of the profile starts
+  in the middle and the coach learns it. `CoachTab.tsx` is the Week and the Chat. `useCoach.ts`
+  keeps two weeks planned (`useCoachPlan`), lets the coach replan a due week on its own once
+  signed in (`useCoachAutoPlan`), and runs the chat (`useCoachChat`).
 
 ## The voice
 

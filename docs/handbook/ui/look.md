@@ -3,7 +3,7 @@ type: reference
 title: The look
 description: Forma's dark glass look — the color tokens, type, surfaces, buttons and tab bar, where each lives (tailwind.config.ts, globals.css, src/ui/), and the rules that keep it calm.
 tags: [ui, design, tokens, tailwind]
-timestamp: 2026-11-02
+timestamp: 2026-11-10
 ---
 
 # The look
@@ -37,6 +37,12 @@ with tight tracking.
 - `Segmented`: choices in one glass tray (how a set felt, how the workout felt).
 - `Glow`: one soft blue light per screen, at 20% opacity.
 - `TabBar`: floating glass pill, four icons (lucide), the open one lit.
+- `Screen`: a full screen with its glow, safe-area padding and room for the tab bar. `Label` is a
+  small muted heading; `Chip` a small pill to tap (a quick reply, a setup choice).
+- `Stats`: a row of big numbers with a word under each (sets, this week, streak).
+- `Avatar`: a round photo, or the initials on one of four quiet tones.
+- Sheets (add a friend, cheer, edit profile, close a workout) slide up over a dim backdrop on a
+  near-opaque glass card.
 
 ## Rules
 

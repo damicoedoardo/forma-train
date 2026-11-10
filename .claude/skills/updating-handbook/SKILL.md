@@ -36,7 +36,9 @@ config has no row: give a new folder its row (and a page if no page fits).
 | `src/features/coach/**` | `features/coach.md` |
 | `src/features/exercises/**` | `features/exercises.md` |
 | `src/features/account/**` | `features/account.md` |
+| `src/features/social/**` | `features/social.md` |
 | `backend/app/coach.py` | `features/coach.md`, `backend/api.md` |
+| `backend/app/routes/{friends,cheers,feed}.py` | `features/social.md`, `backend/api.md` |
 | `backend/**` | `backend/api.md` |
 | `public/**` | `architecture/structure.md` |
 | `package.json`, `tsconfig.json`, `vitest.config.ts`, `next.config.ts`, `.github/workflows/app.yml`, `.github/workflows/backend.yml` | `dev/workflow.md` |

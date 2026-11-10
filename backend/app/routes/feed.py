@@ -43,6 +43,8 @@ class Workout(BaseModel):
     sets: int = Field(ge=0, le=500)
     exercises: list[str] = Field(max_length=12)
     mini: bool = False
+    # Sets that beat the best set last time.
+    records: int = Field(default=0, ge=0, le=500)
     started_at: datetime | None = None
 
 
