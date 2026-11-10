@@ -109,7 +109,7 @@ function Friends({ code }: { code: string | null }) {
             <span className="text-[16px] font-medium">{f.name}</span>
             <span className="truncate text-[13px] text-ink-muted">Training · {f.training}</span>
           </div>
-          <button type="button" onClick={() => setCheering(f)} className="h-10 rounded-pill bg-ink px-5 text-[14px] font-medium text-base">
+          <button type="button" onClick={() => setCheering(f)} className="h-10 press btn-primary rounded-pill px-5 text-[14px] font-medium text-base">
             Cheer
           </button>
         </Glass>
@@ -119,7 +119,7 @@ function Friends({ code }: { code: string | null }) {
         <Glass key={f.id} className="flex items-center gap-3 px-4 py-3.5">
           <FriendAvatar f={f} size={40} />
           <span className="flex-1 text-[15px]">{f.name} wants to be friends</span>
-          <button type="button" onClick={() => acceptFriend(f.id).then(load)} className="h-10 rounded-pill bg-ink px-4 text-[14px] font-medium text-base">
+          <button type="button" onClick={() => acceptFriend(f.id).then(load)} className="h-10 press btn-primary rounded-pill px-4 text-[14px] font-medium text-base">
             Accept
           </button>
         </Glass>
@@ -164,8 +164,8 @@ function Friends({ code }: { code: string | null }) {
 /** A sheet from the bottom, over a dim backdrop. */
 function Sheet({ children, onClose }: { children: React.ReactNode; onClose: () => void }) {
   return (
-    <div className="fixed inset-0 z-30 flex items-end bg-black/55 px-4" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 20px)' }} onClick={onClose}>
-      <div className="glass mx-auto flex w-full max-w-[448px] flex-col gap-4 rounded-card !bg-[#16171C]/95 p-5" onClick={(e) => e.stopPropagation()}>
+    <div className="fade fixed inset-0 z-30 flex items-end bg-black/55 px-4" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 20px)' }} onClick={onClose}>
+      <div className="glass sheet mx-auto flex w-full max-w-[448px] flex-col gap-4 rounded-card !bg-[#16171C]/95 p-5" onClick={(e) => e.stopPropagation()}>
         {children}
       </div>
     </div>
@@ -214,7 +214,7 @@ function AddFriend({ code, onClose, onAdded }: { code: string; onClose: () => vo
         }}
       >
         <input value={their} onChange={(e) => setTheir(e.target.value)} placeholder="Their code" aria-label="Their code" maxLength={12} className="min-w-0 flex-1 bg-transparent text-[16px] uppercase tracking-[1px] text-ink outline-none placeholder:normal-case placeholder:tracking-normal placeholder:text-ink-faint" />
-        <button type="submit" aria-label="Add" disabled={!their.trim()} className="flex h-11 w-11 items-center justify-center rounded-full bg-ink text-base disabled:opacity-30">
+        <button type="submit" aria-label="Add" disabled={!their.trim()} className="flex h-11 w-11 items-center justify-center press btn-primary rounded-full text-base disabled:opacity-30">
           <Plus size={18} strokeWidth={2.2} aria-hidden />
         </button>
       </form>
@@ -254,7 +254,7 @@ function CheerSheet({ friend, onClose }: { friend: FriendCard; onClose: () => vo
         }}
       >
         <input autoFocus value={text} onChange={(e) => setText(e.target.value)} placeholder="Your words" aria-label="Your words" maxLength={CHEER_LIMIT.length} className="min-w-0 flex-1 bg-transparent text-[16px] text-ink outline-none placeholder:text-ink-faint" />
-        <button type="submit" disabled={!text.trim()} className="h-11 rounded-pill bg-ink px-4 text-[14px] font-medium text-base disabled:opacity-30">
+        <button type="submit" disabled={!text.trim()} className="h-11 press btn-primary rounded-pill px-4 text-[14px] font-medium text-base disabled:opacity-30">
           Send
         </button>
       </form>
@@ -383,7 +383,7 @@ function PostCard({ p, onChange }: { p: Post; onChange: (p: Post) => void }) {
             }}
           >
             <input value={text} onChange={(e) => setText(e.target.value)} placeholder="Comment" aria-label="Comment" maxLength={FEED_LIMIT.comment} className="h-10 min-w-0 flex-1 rounded-pill bg-white/[0.06] px-4 text-[14px] text-ink outline-none placeholder:text-ink-faint" />
-            <button type="submit" disabled={!text.trim()} className="h-10 rounded-pill bg-ink px-4 text-[13px] font-medium text-base disabled:opacity-30">
+            <button type="submit" disabled={!text.trim()} className="h-10 press btn-primary rounded-pill px-4 text-[13px] font-medium text-base disabled:opacity-30">
               Post
             </button>
           </form>

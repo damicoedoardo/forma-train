@@ -31,9 +31,11 @@ with tight tracking.
 
 ## Surfaces and parts (`src/ui/`, `.glass` in `globals.css`)
 
-- `Glass`: the one surface, white at 4.5% with a 6.5% hairline and a 20px blur. Depth comes from
+- `Glass`: the one surface, lit from above: white from 6% down to 3.5%, a 6.5% hairline, a thin
+  line of light on the top edge, and a 20px blur. Depth comes from
   layering glass over the base and the glow, not from shadows.
-- `Button`: a 56px pill. `primary` (ink on base) is the one main action of a screen; else `glass`.
+- `Button`: a 56px pill. `primary` (soft white, lit from above, a little lifted: `.btn-primary`)
+  is the one main action of a screen; else `glass`.
 - `Segmented`: choices in one glass tray (how a set felt, how the workout felt).
 - `Glow`: one soft blue light per screen, at 20% opacity.
 - `TabBar`: floating glass pill, four icons (lucide), the open one lit.
@@ -43,6 +45,21 @@ with tight tracking.
 - `Avatar`: a round photo, or the initials on one of four quiet tones.
 - Sheets (add a friend, cheer, edit profile, close a workout) slide up over a dim backdrop on a
   near-opaque glass card.
+
+## The ring (`src/ui/Ring.tsx`)
+
+Forma's one signature shape, added 2026-11-10. A circle cut into segments, one per set: done
+ones are ink, the one you are on is the accent, the rest wait. It holds the rep counter in the
+workout, drains as the rest clock, closes in ink on the screen after, and is the app icon
+(`public/icon-*.png`, five segments). Use it only for progress you can count; never as decoration.
+
+## Motion (`globals.css`)
+
+Quiet and short. A screen's parts rise in one after another (`.rise`, set by `Screen`, replayed
+when its `view` changes). The lit pill in `Segmented` and the lit circle in `TabBar` slide.
+Anything pressed gives a little (`.press`). A changed number pops (`.pop`). Sheets slide up
+(`.sheet` over `.fade`). The glow breathes over nine seconds. A logged set gives a short buzz
+where the phone allows.
 
 ## Rules
 

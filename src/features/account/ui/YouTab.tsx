@@ -125,8 +125,8 @@ function EditSheet({ state, update, me, signedIn, onClose }: { state: TrainingSt
   };
   const field = 'glass h-14 w-full rounded-[20px] bg-transparent px-5 text-[16px] text-ink outline-none placeholder:text-ink-faint';
   return (
-    <div className="fixed inset-0 z-30 flex items-end bg-black/55 px-4" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 20px)' }} onClick={onClose}>
-      <div className="glass mx-auto flex w-full max-w-[448px] flex-col gap-3 rounded-card !bg-[#16171C]/95 p-5" onClick={(e) => e.stopPropagation()}>
+    <div className="fade fixed inset-0 z-30 flex items-end bg-black/55 px-4" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 20px)' }} onClick={onClose}>
+      <div className="glass sheet mx-auto flex w-full max-w-[448px] flex-col gap-3 rounded-card !bg-[#16171C]/95 p-5" onClick={(e) => e.stopPropagation()}>
         <input value={name} onChange={(e) => setName(e.target.value)} maxLength={24} placeholder="Name" aria-label="Name" className={field} />
         {signedIn && (
           <>

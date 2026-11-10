@@ -8,3 +8,4 @@ export type { Tab } from './TabBar';
 export { Avatar } from './Avatar';
 export { Stats } from './Stats';
 export { Screen, Label, Chip } from './Screen';
+export { Ring } from './Ring';

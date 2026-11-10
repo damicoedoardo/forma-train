@@ -2,14 +2,17 @@ import type { ReactNode } from 'react';
 import { Glow } from './Glow';
 
 /** A full screen: the base, one soft glow, safe-area padding, and room for the tab bar under it. */
-export function Screen({ children, glow = '-left-10 -top-44', tabs = true, className = '' }: { children: ReactNode; glow?: string; tabs?: boolean; className?: string }) {
+export function Screen({ children, glow = '-left-10 -top-44', tabs = true, className = '', view, bar }: { children: ReactNode; /** Stays put under the screen (the tab bar). */ bar?: ReactNode; glow?: string; tabs?: boolean; className?: string; /** Names what is on screen: a new name plays the entrance again. */ view?: string }) {
   return (
     <main
-      className={`relative mx-auto flex min-h-[100dvh] max-w-[480px] flex-col overflow-hidden px-4 ${className}`}
-      style={{ paddingTop: 'calc(env(safe-area-inset-top) + 20px)', paddingBottom: tabs ? 'calc(env(safe-area-inset-bottom) + 108px)' : 'calc(env(safe-area-inset-bottom) + 24px)' }}
+      className={`relative mx-auto flex min-h-[100dvh] max-w-[480px] flex-col overflow-x-clip px-4 ${className}`}
+      style={{ paddingTop: 'calc(env(safe-area-inset-top) + 20px)', paddingBottom: tabs ? 'calc(env(safe-area-inset-bottom) + 100px)' : 'calc(env(safe-area-inset-bottom) + 24px)' }}
     >
       <Glow className={glow} />
-      <div className="relative flex flex-1 flex-col">{children}</div>
+      <div key={view} className="rise relative flex flex-1 flex-col">
+        {children}
+      </div>
+      {bar}
     </main>
   );
 }
@@ -22,7 +25,7 @@ export function Label({ children }: { children: ReactNode }) {
 /** A small glass pill to tap: a quick reply, a choice. `on` lights it. */
 export function Chip({ children, on = false, onClick, className = '' }: { children: ReactNode; on?: boolean; onClick?: () => void; className?: string }) {
   return (
-    <button type="button" onClick={onClick} aria-pressed={on} className={`h-10 shrink-0 rounded-pill px-4 text-[14px] transition-colors ${on ? 'bg-ink font-medium text-base' : 'glass text-ink-soft'} ${className}`}>
+    <button type="button" onClick={onClick} aria-pressed={on} className={`press h-10 shrink-0 rounded-pill px-4 text-[14px] ${on ? 'btn-primary font-medium text-base' : 'glass text-ink-soft'} ${className}`}>
       {children}
     </button>
   );

@@ -55,22 +55,22 @@ export function Today({ state, now, photo, onStart, onRest, onYou, onCoach }: { 
       {!ahead && (
         <Glass className="mt-6 flex flex-col px-5 py-1">
           {rows(workout).map((r, i) => (
-            <div key={r.key} className={`flex items-center justify-between py-3 ${i ? 'border-t hairline' : ''}`}>
+            <div key={r.key} className={`flex items-center justify-between py-[11px] ${i ? 'border-t hairline' : ''}`}>
               <span className={`text-[16px] ${r.soft ? 'text-ink-muted' : ''}`}>{r.name}</span>
-              <span className="text-[15px] tabular-nums text-ink-muted">{r.dose}</span>
+              <span className="num text-[15px] text-ink-muted">{r.dose}</span>
             </div>
           ))}
         </Glass>
       )}
 
       {line && (
-        <button type="button" onClick={onCoach} className="glass mt-3 flex items-center gap-3 rounded-[20px] px-4 py-3.5 text-left">
+        <button type="button" onClick={onCoach} className="glass press mt-3 flex items-center gap-3 rounded-[20px] px-4 py-3.5 text-left">
           <span aria-hidden className="h-2 w-2 shrink-0 rounded-full bg-accent shadow-[0_0_8px_rgba(110,116,240,0.7)]" />
           <span className="text-[14px] leading-5 text-ink-soft">{line.text}</span>
         </button>
       )}
 
-      <div className="mt-auto flex gap-3 pt-6">
+      <div className="sticky z-10 mt-auto flex gap-3 pt-6" style={{ bottom: 'calc(env(safe-area-inset-bottom) + 96px)' }}>
         {going ? (
           <Button className="flex-1" onClick={onStart}>
             Continue · {setCount(state, workout).done}/{setCount(state, workout).of}
@@ -108,24 +108,32 @@ function rows(workout: WorkoutExercise[]): { key: string; name: string; dose: st
   ];
 }
 
-/** The week as seven dots: filled for done, ringed for today, small for rest. */
+/** The week as seven days: a letter and a mark. Done is lit, a workout ahead is a ring, rest is a
+    dot, and today's letter is bright with the accent under it. */
 function WeekDots({ state, now }: { state: TrainingState; now: Date }) {
   const week = state.coach?.week;
   const today = dayKey(now);
   const slots = week ? weekSlots(week, 0) : [];
   if (!slots.length) return null;
   return (
-    <div className="mt-6 flex items-center gap-2" aria-label="This week">
+    <div className="mt-7 grid grid-cols-7" aria-label="This week">
       {slots.map((s) => {
         const done = !!s.day?.done;
         const isToday = s.date === today;
         const train = !!s.day;
         return (
-          <span
-            key={s.date}
-            title={weekdayOf(s.date)}
-            className={`h-2.5 flex-1 rounded-full ${done ? 'bg-ink' : train ? 'bg-white/[0.22]' : restKept(state, s.date) ? 'bg-white/[0.10]' : 'bg-white/[0.06]'} ${isToday ? 'ring-1 ring-accent ring-offset-2 ring-offset-base' : ''}`}
-          />
+          <div key={s.date} className="flex flex-col items-center gap-2.5" title={weekdayOf(s.date)}>
+            <span className={`text-[12px] ${isToday ? 'font-medium text-ink' : 'text-ink-faint'}`}>{weekdayOf(s.date)[0]}</span>
+            <span className="flex h-3.5 items-center">
+              {done ? (
+                <span className="h-3.5 w-3.5 rounded-full bg-ink" />
+              ) : train ? (
+                <span className={`h-3.5 w-3.5 rounded-full border-[1.5px] ${isToday ? 'border-accent shadow-[0_0_10px_rgba(110,116,240,0.7)]' : 'border-white/30'}`} />
+              ) : (
+                <span className={`h-1.5 w-1.5 rounded-full ${restKept(state, s.date) ? 'bg-white/40' : 'bg-white/[0.14]'}`} />
+              )}
+            </span>
+          </div>
         );
       })}
     </div>

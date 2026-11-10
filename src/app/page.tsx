@@ -121,7 +121,7 @@ export default function Home() {
 
   const toYou = () => setTab('you');
   return (
-    <Screen glow={tab === 'friends' ? '-right-52 top-64' : '-left-10 -top-44'}>
+    <Screen view={tab} bar={<TabBar tab={tab} onChange={setTab} />} glow={tab === 'friends' ? '-right-52 top-64' : tab === 'coach' ? 'left-1/3 -top-56' : tab === 'you' ? 'left-[-15px] -top-48' : '-left-10 -top-44'}>
       {tab === 'today' && (
         <Today
           state={state}
@@ -136,7 +136,6 @@ export default function Home() {
       {tab === 'coach' && <CoachTab state={state} update={update} signedIn={signedIn} now={now} onSignIn={toYou} />}
       {tab === 'friends' && <FriendsTab signedIn={signedIn} code={social.code} onSignIn={toYou} />}
       {tab === 'you' && <YouTab state={state} update={update} now={now} photo={social.me?.photo ?? null} me={social.me} onPhoto={social.refreshMe} onRedo={() => setRedo(true)} />}
-      <TabBar tab={tab} onChange={setTab} />
     </Screen>
   );
 }

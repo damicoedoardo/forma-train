@@ -173,7 +173,7 @@ function Chat({ state, update, signedIn, now, onSignIn, onWeek }: { state: Train
             }}
           >
             <input value={text} onChange={(e) => setText(e.target.value)} placeholder="Message" aria-label="Message" maxLength={1000} className="min-w-0 flex-1 bg-transparent text-[16px] text-ink outline-none placeholder:text-ink-faint" />
-            <button type="submit" aria-label="Send" disabled={!text.trim() || busy} className="flex h-11 w-11 items-center justify-center rounded-full bg-ink text-base disabled:opacity-30">
+            <button type="submit" aria-label="Send" disabled={!text.trim() || busy} className="flex h-11 w-11 items-center justify-center press btn-primary rounded-full text-base disabled:opacity-30">
               <ArrowUp size={18} strokeWidth={2.2} aria-hidden />
             </button>
           </form>

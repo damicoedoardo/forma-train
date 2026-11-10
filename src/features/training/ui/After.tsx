@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Button, Segmented, Stats } from '@/ui';
+import { Button, Ring, Segmented, Stats } from '@/ui';
 import { weekTally } from '@/features/coach/week';
 import { sessionsThisWeek, WEEKLY_GOAL, type Session, type TrainingState } from '../session';
 import { clockText } from '../workout';
@@ -41,9 +41,12 @@ export function After({ state, session, title, startedAt, update, onDone, onShar
 
   return (
     <>
-      <div className="mt-6 flex flex-col gap-1.5">
+      <div className="mt-4 flex flex-col items-center gap-5">
         <span className="text-[15px] text-ink-muted">{shortTitle(title)} · done</span>
-        <span className="font-display text-[64px] font-normal leading-[68px] tracking-[-2.5px] tabular-nums">{clockText(Math.max(0, took))}</span>
+        <Ring size={216} value={of ? done / of : 1} tone="ink" label={`${done} of ${of} sets`}>
+          <span className="num font-display text-[56px] font-normal leading-[60px] tracking-[-2px]">{clockText(Math.max(0, took))}</span>
+          <span className="text-[13px] text-ink-faint">time</span>
+        </Ring>
       </div>
 
       <div className="mt-8">
@@ -57,12 +60,12 @@ export function After({ state, session, title, startedAt, update, onDone, onShar
       </div>
 
       {up.length > 0 && (
-        <div className="mt-4 flex flex-wrap gap-2">
+        <div className="mt-3 flex flex-wrap justify-center gap-2">
           {up.slice(0, 4).map((id) => {
             const e = session.entries.find((x) => x.exerciseId === id);
             const heavier = session.heavier?.includes(id);
             return (
-              <span key={id} className="glass flex h-9 items-center gap-1.5 rounded-pill px-3.5 text-[14px]">
+              <span key={id} className="glass flex h-9 items-center gap-1.5 rounded-pill px-3.5 text-[14px] text-ink-soft">
                 {e?.name ?? id} <span className="text-accent-soft">{heavier ? '+kg' : '↑'}</span>
               </span>
             );
@@ -70,7 +73,7 @@ export function After({ state, session, title, startedAt, update, onDone, onShar
         </div>
       )}
 
-      <span className="mt-10 px-1 text-[15px] text-ink-muted">How was it?</span>
+      <span className="mt-8 px-1 text-[15px] text-ink-muted">How was it?</span>
       <div className="mt-3">
         <Segmented label="How was it" options={FELT} value={felt} onChange={setFelt} />
       </div>
