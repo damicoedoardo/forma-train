@@ -1,6 +1,6 @@
 'use client';
 
-import { Avatar, Button, Glass, Ring } from '@/ui';
+import { Avatar, Button, Glass, Mark, Ring } from '@/ui';
 import { currentPlan, isRestToday, restKept, todayIs, weekRing, weekSlots, weekdayOf } from '@/features/coach/week';
 import { freshNudge, coachNudge } from '@/features/coach/nudge';
 import { minutesOf } from '@/features/coach/validate';
@@ -30,41 +30,50 @@ export function Today({ state, now, photo, onStart, onRest, onYou, onCoach }: { 
   return (
     <>
       <div className="flex items-center justify-between">
-        <span className="text-[15px] text-ink-muted">{DATE.format(now)}</span>
+        <Mark />
         <button type="button" onClick={onYou} aria-label="You" className="rounded-full">
           <Avatar name={state.profile.name ?? ''} src={photo} size={40} />
         </button>
       </div>
 
-      <div className="mt-10 flex items-center justify-between gap-4">
+      <div className="hero mt-7 rounded-[28px] px-5 pb-5 pt-5">
+      <div className="flex items-start justify-between gap-4">
         <div className="flex min-w-0 flex-col gap-1.5">
+          <span className="mb-3 text-[13px] text-white/60">{DATE.format(now)}</span>
           {ahead ? (
             <>
-              <span className="text-[15px] text-ink-muted">{day.kind === 'done' ? 'Done today' : kept ? 'Rested' : 'Rest day'}</span>
-              <h1 className="font-display text-[40px] font-medium leading-[44px] tracking-[-1.2px]">{day.next ? `Next: ${weekdayOf(day.next.date)}` : 'Week done'}</h1>
-              {day.next && <span className="text-[15px] text-ink-muted">{shortTitle(day.next.plan.title)}</span>}
+              <span className="text-[15px] text-white/60">{day.kind === 'done' ? 'Done today' : kept ? 'Rested' : 'Rest day'}</span>
+              <h1 className="font-display text-[34px] font-medium leading-[38px] tracking-[-1px]">{day.next ? `Next: ${weekdayOf(day.next.date)}` : 'Week done'}</h1>
+              {day.next && <span className="text-[15px] text-white/60">{shortTitle(day.next.plan.title)}</span>}
             </>
           ) : (
             <>
-              <h1 className="font-display text-[40px] font-medium leading-[44px] tracking-[-1.2px]">{shortTitle(title)}</h1>
-              <span className="text-[15px] text-ink-muted">{[titleKind(title), minutes ? `${minutes} min` : null, `${moves.length} moves`].filter(Boolean).join(' · ')}</span>
+              <h1 className="font-display text-[34px] font-medium leading-[38px] tracking-[-1px]">{shortTitle(title)}</h1>
+              <span className="text-[15px] text-white/60">{[titleKind(title), minutes ? `${minutes} min` : null, `${moves.length} moves`].filter(Boolean).join(' · ')}</span>
             </>
           )}
         </div>
         {ring && (
-          <Ring size={68} stroke={5} of={ring.of} done={ring.done} now={day.kind === 'workout'} label={`${ring.done} of ${ring.of} workouts this week`}>
+          <Ring size={72} stroke={5} of={ring.of} done={ring.done} now={day.kind === 'workout'} label={`${ring.done} of ${ring.of} workouts this week`}>
             <span className="num font-display text-[17px] leading-none">
               {ring.done}
-              <span className="text-ink-faint">/{ring.of}</span>
+              <span className="text-white/50">/{ring.of}</span>
             </span>
           </Ring>
         )}
       </div>
-
       <WeekDots state={state} now={now} />
+      </div>
+
+      {line && (
+        <button type="button" onClick={onCoach} className="glass press mt-3 flex items-center gap-3 rounded-[20px] px-4 py-3.5 text-left">
+          <span aria-hidden className="h-2 w-2 shrink-0 rounded-full bg-accent shadow-[0_0_8px_rgba(110,116,240,0.7)]" />
+          <span className="text-[14px] leading-5 text-ink-soft">{line.text}</span>
+        </button>
+      )}
 
       {!ahead && (
-        <Glass className="mt-6 flex flex-col px-5 py-1">
+        <Glass className="mt-3 flex flex-col px-5 py-1">
           {rows(workout).map((r, i) => (
             <div key={r.key} className={`flex items-center justify-between py-[11px] ${i ? 'border-t hairline' : ''}`}>
               <span className={`text-[16px] ${r.soft ? 'text-ink-muted' : ''}`}>{r.name}</span>
@@ -74,12 +83,6 @@ export function Today({ state, now, photo, onStart, onRest, onYou, onCoach }: { 
         </Glass>
       )}
 
-      {line && (
-        <button type="button" onClick={onCoach} className="glass press mt-3 flex items-center gap-3 rounded-[20px] px-4 py-3.5 text-left">
-          <span aria-hidden className="h-2 w-2 shrink-0 rounded-full bg-accent shadow-[0_0_8px_rgba(110,116,240,0.7)]" />
-          <span className="text-[14px] leading-5 text-ink-soft">{line.text}</span>
-        </button>
-      )}
 
       <div className="sticky z-10 mt-auto flex gap-3 pt-6" style={{ bottom: 'calc(env(safe-area-inset-bottom) + 96px)' }}>
         {going ? (
@@ -127,14 +130,14 @@ function WeekDots({ state, now }: { state: TrainingState; now: Date }) {
   const slots = week ? weekSlots(week, 0) : [];
   if (!slots.length) return null;
   return (
-    <div className="mt-7 grid grid-cols-7" aria-label="This week">
+    <div className="mt-6 grid grid-cols-7 border-t border-white/10 pt-4" aria-label="This week">
       {slots.map((s) => {
         const done = !!s.day?.done;
         const isToday = s.date === today;
         const train = !!s.day;
         return (
           <div key={s.date} className="flex flex-col items-center gap-2.5" title={weekdayOf(s.date)}>
-            <span className={`text-[12px] ${isToday ? 'font-medium text-ink' : 'text-ink-faint'}`}>{weekdayOf(s.date)[0]}</span>
+            <span className={`text-[12px] ${isToday ? 'font-medium text-ink' : 'text-white/45'}`}>{weekdayOf(s.date)[0]}</span>
             <span className="flex h-3.5 items-center">
               {done ? (
                 <span className="h-3.5 w-3.5 rounded-full bg-ink" />

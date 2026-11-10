@@ -39,8 +39,14 @@ with tight tracking.
 - `Button`: a 56px pill. `primary` (soft white, lit from above, a little lifted: `.btn-primary`)
   is the one main action of a screen; else `glass`.
 - `Segmented`: choices in one glass tray (how a set felt, how the workout felt).
-- `Glow`: one soft blue light per screen, at 20% opacity, and a fainter iris one (9%) low on the
-  other side, so the dark has a little color to it.
+- `Glow`: the light behind a screen: a main light and a fainter one low on the other side, a
+  base a little brighter at the top, and a fine grain over it all. `Screen`'s `mood` sets the
+  colors, and they shift slowly: `calm` (blue and iris, the tabs), `work` (violet and a warm
+  ember, a set under way), `rest` (cool teal blue), `done` (gold, the screen after).
+- `.hero` (`globals.css`): the one rich surface, a deep indigo card with a soft light in its
+  top corner. Today's workout sits in it with the week ring and the week's days. One a screen at
+  most; everything else stays glass.
+- `Mark`: the five-part ring and the name "Forma", top left on Today.
 - `TabBar`: floating glass pill, four icons (lucide), the open one lit.
 - `Screen`: a full screen with its glow, safe-area padding and room for the tab bar. `Label` is a
   small muted heading; `Chip` a small pill to tap (a quick reply, a setup choice).

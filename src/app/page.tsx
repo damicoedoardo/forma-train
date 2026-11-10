@@ -106,7 +106,7 @@ export default function Home() {
 
   if (after)
     return (
-      <Screen tabs={false} glow="-right-32 -top-32">
+      <Screen tabs={false} glow="-right-32 -top-32" mood="done">
         <After
           state={state}
           session={after.session}

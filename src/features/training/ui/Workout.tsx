@@ -105,7 +105,7 @@ export function Workout({ state, update, onFinish, onLeave, onDrop, cheer, onChe
   const ahead = !!q && !isTap(q) && beatsBest(state, q.id, reps);
 
   return (
-    <Screen tabs={false} glow="left-[-15px] top-[120px]" view={restLeft > 0 ? 'rest' : (q?.id ?? 'end')}>
+    <Screen tabs={false} glow="left-[-15px] top-[120px]" mood={restLeft > 0 ? 'rest' : 'work'} view={restLeft > 0 ? 'rest' : (q?.id ?? 'end')}>
       <div className="flex items-center justify-between">
         <button type="button" aria-label="Close workout" onClick={() => setMenu(true)} className="glass press flex h-11 w-11 items-center justify-center rounded-full">
           <X size={18} strokeWidth={2} aria-hidden />
