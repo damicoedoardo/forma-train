@@ -1,0 +1,172 @@
+/* The movements every exercise is sorted into (classify.ts). A movement carries the coaching
+   (coaching.ts: family, region, tips, common mistakes), so each of the 890 exercises gets the
+   know-how of the movement it is. In FORMA each movement was also a pixel move. */
+
+/** The bodyweight program's own moves. */
+export const PROGRAM_MOVES = [
+  'incline-pushup',
+  'pushup',
+  'diamond-pushup',
+  'dips',
+  'archer-pushup',
+  'dead-hang',
+  'assisted-pullup',
+  'negatives',
+  'strict-pullup',
+  'pullup',
+  'lsit-pullup',
+  'knee-raise',
+  'tuck-lsit',
+  'one-leg-lsit',
+  'lsit',
+  'toes-to-bar',
+] as const;
+
+/** The library's movements, by body part. */
+export const LIBRARY_MOVES = [
+  // legs
+  'squat',
+  'barbell-squat',
+  'front-squat',
+  'overhead-squat',
+  'lunge',
+  'step-up',
+  'leg-press',
+  'leg-extension',
+  'leg-curl',
+  'calf-raise',
+  'bridge',
+  'deadlift',
+  'rdl',
+  'good-morning',
+  'kettlebell-swing',
+  'kickback-glute',
+  'side-leg-raise',
+  'back-extension',
+  'jump',
+  // push
+  'bench-press',
+  'chest-fly',
+  'shoulder-press',
+  'push-press',
+  'lateral-raise',
+  'front-raise',
+  'rear-delt-fly',
+  'upright-row',
+  'shrug',
+  'triceps-pushdown',
+  'triceps-overhead',
+  'skull-crusher',
+  'triceps-kickback',
+  'bench-dip',
+  'handstand-pushup',
+  'press-out',
+  // pull
+  'barbell-row',
+  'inverted-row',
+  'lat-pulldown',
+  'seated-row',
+  'straight-arm-pulldown',
+  'curl',
+  'pullover',
+  'wrist-curl',
+  'carry',
+  // core
+  'plank',
+  'side-plank',
+  'crunch',
+  'sit-up',
+  'leg-raise',
+  'dead-bug',
+  'russian-twist',
+  'mountain-climber',
+  'ab-rollout',
+  'cable-crunch',
+  'side-bend',
+  'woodchop',
+  'windmill',
+  // power and conditioning
+  'clean',
+  'snatch',
+  'slam',
+  'battle-ropes',
+  'sled-push',
+  'run',
+  'bike',
+  'rower',
+  'jump-rope',
+  'star-jump',
+  // stretching and mobility
+  'reach-stretch',
+  'toe-touch',
+  'quad-stretch',
+  'seated-stretch',
+  'knee-hug',
+  'lunge-stretch',
+  'calf-stretch',
+  'arm-stretch',
+  'cat-cow',
+  'child-pose',
+  'foam-roll',
+  'circles',
+  'neck',
+  'balance',
+] as const;
+
+export type ProgramMove = (typeof PROGRAM_MOVES)[number];
+export type LibraryMove = (typeof LIBRARY_MOVES)[number];
+/** A movement: one of the program's, or one of the library's. */
+export type MoveId = ProgramMove | LibraryMove;
+
+export const MOVE_IDS: MoveId[] = [...PROGRAM_MOVES, ...LIBRARY_MOVES];
+
+/** What a move is done with. */
+export type Kit = 'none' | 'barbell' | 'dumbbell' | 'kettlebell' | 'cable' | 'band' | 'machine' | 'medball' | 'plate' | 'ball' | 'roller' | 'stone';
+
+const DEFAULT_KIT: Partial<Record<LibraryMove, Kit>> = {
+  'barbell-squat': 'barbell',
+  'front-squat': 'barbell',
+  'overhead-squat': 'barbell',
+  deadlift: 'barbell',
+  rdl: 'barbell',
+  'good-morning': 'barbell',
+  'kettlebell-swing': 'kettlebell',
+  'bench-press': 'barbell',
+  'chest-fly': 'dumbbell',
+  'shoulder-press': 'dumbbell',
+  'push-press': 'barbell',
+  'lateral-raise': 'dumbbell',
+  'front-raise': 'dumbbell',
+  'rear-delt-fly': 'dumbbell',
+  'upright-row': 'barbell',
+  shrug: 'barbell',
+  'triceps-pushdown': 'cable',
+  'triceps-overhead': 'dumbbell',
+  'skull-crusher': 'barbell',
+  'triceps-kickback': 'dumbbell',
+  'barbell-row': 'barbell',
+  'lat-pulldown': 'cable',
+  'seated-row': 'cable',
+  'straight-arm-pulldown': 'cable',
+  curl: 'dumbbell',
+  pullover: 'dumbbell',
+  'wrist-curl': 'dumbbell',
+  carry: 'dumbbell',
+  'ab-rollout': 'none',
+  'cable-crunch': 'cable',
+  'side-bend': 'dumbbell',
+  woodchop: 'cable',
+  windmill: 'kettlebell',
+  clean: 'barbell',
+  snatch: 'barbell',
+  slam: 'medball',
+  'leg-press': 'machine',
+  'leg-extension': 'machine',
+  'leg-curl': 'machine',
+  rower: 'machine',
+  bike: 'machine',
+  'foam-roll': 'roller',
+};
+
+/** The gear a library move is usually done with, when the catalog doesn't say. */
+export const defaultKit = (id: LibraryMove): Kit => DEFAULT_KIT[id] ?? 'none';

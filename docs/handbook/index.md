@@ -27,6 +27,8 @@ pre-push hook and CI refuse a branch whose code changed under a page that didn't
 - [Product](product/index.md)
 - [Architecture](architecture/index.md)
 - [UI](ui/index.md)
+- [Features](features/index.md)
+- [Backend](backend/index.md)
 - [Dev](dev/index.md)
 
 For how we work, the authority is [`AGENTS.md`](../../AGENTS.md). Link to it; don't copy it here.

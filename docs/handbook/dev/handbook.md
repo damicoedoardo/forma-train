@@ -19,7 +19,8 @@ in the same branch.
 - **`node scripts/handbook.mjs check [base]`**: the pages for what the branch touched were updated.
   A commit line `Handbook: none (<why>)` skips it, for a change that makes no page false.
 - **Where it runs**: the pre-push hook (`.githooks/pre-push`, turned on by `pnpm install`), CI
-  (`.github/workflows/handbook.yml`), and a session start hook (`.claude/settings.json`) that
+  (`.github/workflows/handbook.yml`, on every PR, checked against the PR's own base, so a
+  stacked PR is checked against the branch under it), and a session start hook (`.claude/settings.json`) that
   reminds agents to read it first.
 
 The tool and the format come from FORMA's handbook, unchanged.

@@ -1,0 +1,100 @@
+import type { LibraryExercise } from '@/features/exercises/library';
+import { COACHING } from '@/features/exercises/coaching';
+import { todaysWorkout, type TrainingState } from '@/features/training/session';
+import { HOLDS, easierChoices, plainness, swapChoices } from './options';
+import type { Choice, CoachPlan, Gear, PlanItem } from './types';
+import { currentPlan, dayOf, nextDay, setDay, setPlan } from './week';
+
+/* Changing the next workout (the week's next day, week.ts): swap an exercise for an easier one or another, move it, skip it. Each
+   change is kept on the item (`changed`, `skipped`) so the session log shows what you did and the
+   coach learns from it. Sets already logged move with a swapped exercise. */
+
+const isEnd = (it: PlanItem) => it.role === 'warmup' || it.role === 'stretch';
+
+/** The gear the choices may use: the coach's profile, else the built-in plan's gym or home. */
+export function trainingGear(state: TrainingState): Gear[] {
+  return state.coach?.profile?.gear ?? (state.profile.kit === 'home' ? ['none'] : ['gym']);
+}
+
+/** Today's built-in workout as a plan, so it can be changed too. */
+export function planFromQuest(state: TrainingState, all: LibraryExercise[], now: Date): CoachPlan {
+  const gear = trainingGear(state);
+  const items = todaysWorkout(state, 'normal').map((q): PlanItem => {
+    const base = [...all.filter((x) => x.move === q.move)].sort((a, b) => plainness(a) - plainness(b))[0];
+    const family = base?.family ?? COACHING[q.move]?.family ?? 'core';
+    return {
+      id: q.id,
+      name: q.name,
+      move: q.move,
+      cue: q.cue,
+      family,
+      role: q.role,
+      unit: q.unit,
+      sets: q.slot.sets,
+      low: q.slot.low,
+      high: q.slot.high,
+      ...(q.slot.weighted ? { weighted: true } : {}),
+      easier: base && !isEnd({ role: q.role } as PlanItem) ? easierChoices(all, { ...base, id: q.id }, gear) : [],
+      swaps: base && !isEnd({ role: q.role } as PlanItem) ? swapChoices(all, { ...base, id: q.id }, gear) : [],
+    };
+  });
+  return { mode: state.profile.kit === 'home' ? 'calisthenics' : 'gym', items, by: 'built-in', at: now.toISOString(), title: 'The built-in plan' };
+}
+
+/** Put `to` in the place of item `id`, on the next workout or another day still to do. */
+export function changeItem(state: TrainingState, id: string, to: Choice, how: 'easier' | 'swap', date?: string): TrainingState {
+  const day = dayOf(state.coach?.week, date);
+  const plan = day?.plan;
+  const at = plan?.items.findIndex((i) => i.id === id) ?? -1;
+  if (!plan || at === -1 || plan.items.some((i) => i.id === to.id)) return state;
+  const old = plan.items[at];
+  const back: Choice = { id: old.id, name: old.name, move: old.move, cue: old.cue, family: old.family, equipment: '', ...(old.weighted ? { weighted: true } : {}) };
+  const unit = HOLDS.includes(to.move) ? 'sec' : 'reps';
+  const range = unit === old.unit ? { low: old.low, high: old.high } : unit === 'sec' ? { low: 20, high: 45 } : { low: 8, high: 12 };
+  const item: PlanItem = {
+    ...old,
+    id: to.id,
+    name: to.name,
+    move: to.move,
+    cue: to.cue,
+    family: to.family,
+    unit,
+    ...range,
+    weighted: to.weighted,
+    // Easier: the next steps down stay on offer. Swap: the old one can come back.
+    easier: how === 'easier' ? old.easier.slice(old.easier.findIndex((c) => c.id === to.id) + 1) : old.easier.filter((c) => c.id !== to.id),
+    swaps: how === 'swap' ? [back, ...old.swaps.filter((c) => c.id !== to.id)] : old.swaps,
+    changed: old.changed ?? { from: old.id, fromName: old.name, how },
+  };
+  if (!item.weighted) delete item.weighted;
+  // Back to where it started: no change left to note.
+  if (item.changed?.from === to.id) delete item.changed;
+  const items = plan.items.map((it, i) => (i === at ? item : it));
+  // Sets already logged move with it, on the workout under way (the next day).
+  const draft = state.draft && state.draft.sets[id] && day === nextDay(state.coach?.week) ? { ...state.draft, sets: Object.fromEntries(Object.entries(state.draft.sets).map(([k, v]) => [k === id ? to.id : k, v])) } : state.draft;
+  return { ...setDay(state, day.date, { ...plan, items }), draft };
+}
+
+/** Move an exercise one place up (-1) or down (+1); the warm-up stays first and the stretch last. */
+export function moveItem(state: TrainingState, id: string, dir: -1 | 1): TrainingState {
+  const plan = currentPlan(state.coach);
+  const at = plan?.items.findIndex((i) => i.id === id) ?? -1;
+  const to = at + dir;
+  if (!plan || at === -1 || to < 0 || to >= plan.items.length || isEnd(plan.items[at]) || isEnd(plan.items[to])) return state;
+  const items = [...plan.items];
+  [items[at], items[to]] = [items[to], items[at]];
+  return setPlan(state, { ...plan, items });
+}
+
+export function skipItem(state: TrainingState, id: string, skipped: boolean): TrainingState {
+  const plan = currentPlan(state.coach);
+  if (!plan) return state;
+  return setPlan(state, { ...plan, items: plan.items.map((it) => (it.id === id ? { ...it, skipped } : it)) });
+}
+
+/** Can this item move that way? */
+export function canMove(plan: CoachPlan, id: string, dir: -1 | 1): boolean {
+  const at = plan.items.findIndex((i) => i.id === id),
+    to = at + dir;
+  return at !== -1 && to >= 0 && to < plan.items.length && !isEnd(plan.items[at]) && !isEnd(plan.items[to]);
+}
