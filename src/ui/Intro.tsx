@@ -3,9 +3,8 @@
 import { useEffect, useState } from 'react';
 
 /* The opening screen: on each launch the weave draws itself in counter-clockwise, one part after
-   the other, each coming out from under the one before and each faster than the last, so it
-   gathers speed. The iris part lands last: light runs along it, it glows, a fine ring opens out
-   from the mark. Then the name rises in under it, and it all lifts away to the app. Once a launch
+   the other, each coming out from under the one before, at one even pace. The iris part lands
+   last and a soft glow rises under it. Then the name rises in under it, and it all lifts away to the app. Once a launch
    (kept in sessionStorage). A tap skips it; under reduced motion it is only a short fade. */
 
 const R = 32;
@@ -19,10 +18,10 @@ const back = (from: number, sweep: number) => `M${at(from + sweep)}A${R} ${R} 0 
 const PARTS = [0, 1, 2, 3, 4];
 const KEY = 'forma-intro';
 /** The order the parts draw in (it ends on the iris one, 3), how long each takes, and its ease:
-    slow to start, then quicker and quicker, with a soft landing. */
+    one even pace, with a soft start and a soft landing. */
 const ORDER = [2, 1, 0, 4, 3];
-const DUR = [560, 400, 290, 210, 190];
-const EASE = ['cubic-bezier(0.5, 0, 0.8, 0.6)', 'linear', 'linear', 'linear', 'cubic-bezier(0.2, 0.6, 0.3, 1)'];
+const DUR = [300, 260, 260, 260, 320];
+const EASE = ['cubic-bezier(0.4, 0, 0.7, 0.7)', 'linear', 'linear', 'linear', 'cubic-bezier(0.3, 0.3, 0.3, 1)'];
 const FIRST = 200;
 const START = DUR.map((_, n) => FIRST + DUR.slice(0, n).reduce((a, b) => a + b, 0));
 /** When the last part lands (ms). */
@@ -64,7 +63,7 @@ export function Intro() {
     >
       <span className="intro-light pointer-events-none absolute left-1/2 top-1/2 h-[760px] w-[760px] -translate-x-1/2 -translate-y-1/2 rounded-full" />
       <div className="intro-lift relative flex flex-col items-center">
-        <svg width="96" height="96" viewBox="0 0 100 100" className="intro-mark overflow-visible" style={{ animationDelay: `${LAND - 60}ms` }}>
+        <svg width="96" height="96" viewBox="0 0 100 100" className="overflow-visible">
           <defs>
             {PARTS.map((i) => (
               // A part is cut where the next one starts, so the next reads as lying over it.
@@ -86,9 +85,8 @@ export function Intro() {
               <feGaussianBlur stdDeviation="5" />
             </filter>
           </defs>
-          {/* As the iris part lands: a fine ring opens out, and the part glows. */}
-          <circle className="intro-ring" style={{ animationDelay: `${LAND - 40}ms` }} cx="50" cy="50" r={R} fill="none" stroke="#8C84F3" strokeWidth="0.8" />
-          <path className="intro-glow" style={{ animationDelay: `${LAND - 120}ms` }} d={arc(-126 + 72 * 3, 76)} fill="none" stroke="#8C84F3" strokeWidth="15" strokeLinecap="round" filter="url(#intro-blur)" />
+          {/* As the iris part lands, a soft glow rises under it. */}
+          <path className="intro-glow" style={{ animationDelay: `${LAND - 260}ms` }} d={arc(-126 + 72 * 3, 76)} fill="none" stroke="#8C84F3" strokeWidth="15" strokeLinecap="round" filter="url(#intro-blur)" />
           <g style={{ filter: 'drop-shadow(0 0 6px rgba(140,132,243,0.45))' }}>
             {PARTS.map((i) => (
               <g key={i} mask={`url(#intro-${i})`}>
@@ -104,10 +102,6 @@ export function Intro() {
                 />
               </g>
             ))}
-          </g>
-          {/* Light runs along the iris part. */}
-          <g mask="url(#intro-3)">
-            <path className="intro-glint" style={{ animationDelay: `${LAND - 30}ms` }} d={back(-126 + 72 * 3, 76)} pathLength={1} fill="none" stroke="#FFFFFF" strokeOpacity="0.8" strokeWidth="13" />
           </g>
         </svg>
         <span className="mt-7 flex font-display text-[30px] font-medium tracking-[-0.8px] text-ink">
