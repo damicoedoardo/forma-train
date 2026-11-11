@@ -48,6 +48,8 @@ with tight tracking.
   most; everything else stays glass.
 - `Mark`: the weave (five parts of a ring, each tucked under the next, one in iris) and the
   name "Forma", top left on Today.
+- `Weave`: the logo as a clock (the rest screen): its five parts draw in one after another as
+  `value` grows, until the mark is whole.
 - `TabBar`: floating glass pill, four icons (lucide), the open one lit.
 - `Screen`: a full screen with its glow, safe-area padding and room for the tab bar. `Label` is a
   small muted heading; `Chip` a small pill to tap (a quick reply, a setup choice).

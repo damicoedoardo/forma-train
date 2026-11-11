@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Check, CirclePlay, Undo2, X } from 'lucide-react';
-import { Avatar, Button, Glass, Ring, Screen, Segmented } from '@/ui';
+import { Avatar, Button, Glass, Ring, Screen, Segmented, Weave } from '@/ui';
 import { useNow } from '@/platform/useNow';
 import { useWakeLock } from '@/platform/useWakeLock';
 import { armChime, chime } from '@/platform/chime';
@@ -146,9 +146,11 @@ export function Workout({ state, update, onFinish, onLeave, onDrop, cheer, onChe
 
       {restLeft > 0 ? (
         <div className="flex flex-1 flex-col items-center">
-          <span className="mt-14 text-[15px] text-ink-muted">Rest</span>
-          <Ring className="mt-6" value={restLeft / Math.max(restTotal, restLeft, 1)} flash={best !== null} label={`Rest, ${restLeft} seconds left`}>
-            <span key={restLeft <= 3 ? restLeft : 'rest'} className={`num font-display text-[72px] font-normal leading-[76px] tracking-[-2.5px] ${restLeft <= 3 ? 'pop' : ''}`}>
+          {/* The clock sits in the middle of the screen: the logo, weaving in as you recover. */}
+          <div className="my-auto flex flex-col items-center pb-6">
+          <span className="text-[15px] text-ink-muted">Rest</span>
+          <Weave className="mt-6" value={1 - (restLeft - 1) / Math.max(restTotal, restLeft, 1)} flash={best !== null} label={`Rest, ${restLeft} seconds left`}>
+            <span key={restLeft <= 3 ? restLeft : 'rest'} className={`num font-display text-[64px] font-normal leading-[68px] tracking-[-2px] ${restLeft <= 3 ? 'pop' : ''}`}>
               {clockText(restLeft * 1000)}
             </span>
             {best !== null && (
@@ -158,13 +160,14 @@ export function Workout({ state, update, onFinish, onLeave, onDrop, cheer, onChe
                 {unit}
               </span>
             )}
-          </Ring>
+          </Weave>
           {q && (
             <span className="mt-6 flex items-center gap-3 text-[14px] text-ink-faint">
               {moves && <BodyDemo small move={q.move} name={q.name} className="h-[44px] w-[44px] rounded-[12px]" />}
               Next: {q.name}
             </span>
           )}
+          </div>
           <Button kind="glass" className="mt-auto w-full" onClick={() => update(skipRest)}>
             Skip rest
           </Button>
