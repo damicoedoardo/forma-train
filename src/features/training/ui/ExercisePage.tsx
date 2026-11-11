@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import { Check, ChevronLeft, Play, X } from 'lucide-react';
-import { Glass, Label, Screen } from '@/ui';
+import { Glass, Label, Loop, Screen } from '@/ui';
 import { loadLibrary } from '@/features/exercises/library';
 import { guideFor, type Guide } from '@/features/exercises/guide';
+import { photosOf } from '@/features/exercises/photos';
 import { videoEmbedUrl, videoSearchUrl } from '@/features/exercises/videos';
 import type { WorkoutExercise } from '../session';
 import { doseText } from '../workout';
@@ -14,9 +15,14 @@ import { doseText } from '../workout';
 
 export function ExercisePage({ q, onClose }: { q: WorkoutExercise; onClose: () => void }) {
   const [guide, setGuide] = useState<Guide | null>(null);
+  const [frames, setFrames] = useState<[string, string] | null>(null);
   useEffect(() => {
     let live = true;
-    loadLibrary().then((all) => live && setGuide(guideFor(all, q)));
+    loadLibrary().then((all) => {
+      if (!live) return;
+      setGuide(guideFor(all, q));
+      setFrames(photosOf(all, q.id));
+    });
     return () => {
       live = false;
     };
@@ -41,6 +47,8 @@ export function ExercisePage({ q, onClose }: { q: WorkoutExercise; onClose: () =
         <div className="mt-5 aspect-video w-full overflow-hidden rounded-[24px] border border-white/10 bg-black/40">
           {guide?.video ? (
             <iframe src={videoEmbedUrl(guide.video.id)} title={guide.video.title} className="h-full w-full bg-black" allow="encrypted-media; picture-in-picture; fullscreen" allowFullScreen />
+          ) : guide && frames ? (
+            <Loop frames={frames} className="h-full w-full" />
           ) : guide ? (
             <a href={videoSearchUrl(q.name)} target="_blank" rel="noreferrer" className="press flex h-full w-full flex-col items-center justify-center gap-3 text-ink-muted">
               <span className="glass flex h-14 w-14 items-center justify-center rounded-full text-ink">

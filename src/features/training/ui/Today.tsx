@@ -1,8 +1,10 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { ChevronRight } from 'lucide-react';
-import { Avatar, Button, Glass, Mark, Ring } from '@/ui';
+import { Avatar, Button, Glass, Loop, Mark, Ring } from '@/ui';
+import { loadLibrary, type LibraryExercise } from '@/features/exercises/library';
+import { photosOf } from '@/features/exercises/photos';
 import { currentPlan, isRestToday, restKept, todayIs, weekRing, weekSlots, weekdayOf } from '@/features/coach/week';
 import { freshNudge, coachNudge } from '@/features/coach/nudge';
 import { minutesOf } from '@/features/coach/validate';
@@ -12,8 +14,8 @@ import { dayType, isTap, todaysWorkout, type TrainingState, type WorkoutExercise
 import { doseText, setCount } from '../workout';
 import { ExercisePage } from './ExercisePage';
 
-/* Today: the date, the workout, the week as a ring and at a glance, the coach's one line, and Start. A
-   move in the list opens its page: the video, what to do, what to avoid. */
+/* Today: the date, the workout, the week as a ring and at a glance, the coach's one line, and Start. Each
+   move in the list plays a short loop of itself and opens its page: the video, what to do, what to avoid. */
 
 const DATE = new Intl.DateTimeFormat('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
 
@@ -32,6 +34,10 @@ export function Today({ state, now, photo, onStart, onRest, onYou, onCoach }: { 
   const ring = weekRing(state.coach?.week, now);
   const [open, setOpen] = useState<WorkoutExercise | null>(null);
   const close = useCallback(() => setOpen(null), []);
+  const [all, setAll] = useState<LibraryExercise[]>([]);
+  useEffect(() => {
+    loadLibrary().then(setAll);
+  }, []);
 
   return (
     <>
@@ -82,8 +88,9 @@ export function Today({ state, now, photo, onStart, onRest, onYou, onCoach }: { 
         <Glass className="mt-3 flex flex-col px-5 py-1">
           {rows(workout).map((r, i) =>
             r.q ? (
-              <button key={r.key} type="button" onClick={() => setOpen(r.q!)} className={`press flex items-center justify-between py-[11px] text-left ${i ? 'border-t hairline' : ''}`}>
-                <span className="text-[16px]">{r.name}</span>
+              <button key={r.key} type="button" onClick={() => setOpen(r.q!)} className={`press flex items-center gap-3 py-2.5 text-left ${i ? 'border-t hairline' : ''}`}>
+                <Loop frames={all.length ? photosOf(all, r.q.id) : null} className="h-12 w-12 rounded-[14px]" />
+                <span className="min-w-0 flex-1 truncate text-[16px]">{r.name}</span>
                 <span className="flex items-center gap-1.5">
                   <span className="num text-[15px] text-ink-muted">{r.dose}</span>
                   <ChevronRight size={16} strokeWidth={2} className="-mr-1 text-ink-faint" aria-hidden />

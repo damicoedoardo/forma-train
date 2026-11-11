@@ -28,7 +28,8 @@ timestamp: 2026-11-11
   names how a set felt: Easy, Right, Hard (reps in reserve 4+, 2-3, 0-1).
 - **`ui/Today.tsx`**: the Forma mark, then the hero card (the date, the workout's title, the week
   as a ring, workouts done of planned, `weekRing`, and as seven dots), the workout's list
-  (warm-up and cool-down as one line each; tap a move to open its page), the coach's line, and Start / Continue / Mark rested.
+  (warm-up and cool-down as one line each; each move plays a short loop of itself, `photosOf`,
+  and opens its page on a tap), the coach's line, and Start / Continue / Mark rested.
 - **`ui/ExercisePage.tsx`**: one exercise, opened from Today: the video on top, then Do and
   Avoid (`guideFor` in `features/exercises/guide.ts`). It covers the screen; the phone's back
   closes it.
