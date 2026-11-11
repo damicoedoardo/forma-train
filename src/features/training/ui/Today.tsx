@@ -12,8 +12,9 @@ import { dayType, isTap, todaysWorkout, type TrainingState, type WorkoutExercise
 import { doseText, setCount } from '../workout';
 import { ExercisePage } from './ExercisePage';
 import { BodyDemo } from './BodyDemo';
+import { WeekSheet } from './WeekSheet';
 
-/* Today: the date, the workout, the week as a ring and at a glance, the coach's one line, and Start. Each
+/* Today: the date, the workout, the week as a ring and at a glance (tap it for the whole week), the coach's one line, and Start. Each
    move in the list plays our own animation of it and opens its page: the video, what to do, what to avoid. */
 
 const DATE = new Intl.DateTimeFormat('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
@@ -32,6 +33,7 @@ export function Today({ state, now, onStart, onRest, onCoach }: { state: Trainin
   const ahead = day.kind === 'done' || (rest && !going);
   const ring = weekRing(state.coach?.week, now);
   const [open, setOpen] = useState<WorkoutExercise | null>(null);
+  const [weekOpen, setWeekOpen] = useState(false);
   const close = useCallback(() => setOpen(null), []);
 
   return (
@@ -72,7 +74,7 @@ export function Today({ state, now, onStart, onRest, onCoach }: { state: Trainin
           </Ring>
         )}
       </div>
-      <WeekDots state={state} now={now} />
+      <WeekDots state={state} now={now} onOpen={() => setWeekOpen(true)} />
       </div>
 
       {line && (
@@ -129,6 +131,7 @@ export function Today({ state, now, onStart, onRest, onCoach }: { state: Trainin
       </div>
 
       {open && <ExercisePage q={open} onClose={close} />}
+      {weekOpen && <WeekSheet state={state} now={now} onClose={() => setWeekOpen(false)} />}
     </>
   );
 }
@@ -147,13 +150,13 @@ function rows(workout: WorkoutExercise[]): { key: string; name: string; dose: st
 
 /** The week as seven days: a letter and a mark. Done is lit, a workout ahead is a ring, rest is a
     dot, and today's letter is bright with the accent under it. */
-function WeekDots({ state, now }: { state: TrainingState; now: Date }) {
+function WeekDots({ state, now, onOpen }: { state: TrainingState; now: Date; onOpen: () => void }) {
   const week = state.coach?.week;
   const today = dayKey(now);
   const slots = week ? weekSlots(week, 0) : [];
   if (!slots.length) return null;
   return (
-    <div className="relative mt-[84px] grid grid-cols-7 border-t border-white/10 pt-4" aria-label="This week">
+    <button type="button" onClick={onOpen} className="press relative mt-[84px] grid w-full grid-cols-7 border-t border-white/10 pt-4" aria-label="See the week">
       {slots.map((s) => {
         const done = !!s.day?.done;
         const isToday = s.date === today;
@@ -173,6 +176,6 @@ function WeekDots({ state, now }: { state: TrainingState; now: Date }) {
           </div>
         );
       })}
-    </div>
+    </button>
   );
 }

@@ -42,9 +42,10 @@ tools.
   typed; what you train and gear take several taps, then Done). The coach "types" for a moment
   and says a word back before the next one; its lines and the options live in `setupChat.ts`.
   The answers go into `quickAnswers` and `applySetup`; the rest of the profile starts in the
-  middle and the coach learns it. `CoachTab.tsx` is the Week and the Chat (the tab is locked to the phone's height: only the week or
-  the chat list scrolls, and the message bar rides on the keyboard). Its "This week" count is
-  `weekTally`, which falls back to the days a week picked at setup. `useCoach.ts`
+  middle and the coach learns it. `CoachTab.tsx` is only the chat (the week moved to Today's week sheet): the coach's
+  face and name on top, the list, and the message bar (the tab is locked to the phone's height:
+  only the list scrolls, and the message bar rides on the keyboard). The coach's week card in the
+  chat goes to Today. `useCoach.ts`
   keeps two weeks planned (`useCoachPlan`), lets the coach replan a due week on its own once
   signed in (`useCoachAutoPlan`), and runs the chat (`useCoachChat`). While the coach works, the
   chat shows a small `CoachOrb` weaving beside the current tool step.
