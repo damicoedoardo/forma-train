@@ -1,8 +1,9 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { ArrowUp } from 'lucide-react';
+import { ArrowUp, AudioLines } from 'lucide-react';
 import { Button, Chip, Glass, Segmented } from '@/ui';
+import { CoachOrb } from '@/ui/CoachOrb';
 import { cloudConfigured } from '@/platform/api';
 import { dayKey } from '@/features/training/days';
 import { sessionsThisWeek, WEEKLY_GOAL, type TrainingState } from '@/features/training/session';
@@ -12,8 +13,11 @@ import { minutesOf } from '../validate';
 import { daysIn, restKept, weekSlots, weekTally, weekdayOf } from '../week';
 import { useCoachChat } from './useCoach';
 import { shortTitle } from '../title';
+import { demoAsk } from './demo';
+import { Voice } from './Voice';
 
-/* The Coach tab: the week it planned, and the chat. */
+/* The Coach tab: the week it planned, and the chat. With `?demo` in the address the chat is a
+   mockup (`demo.ts`): a made-up coach, and the voice button opens the voice mockup. */
 
 type View = 'week' | 'chat';
 type Update = (fn: (s: TrainingState) => TrainingState) => void;
@@ -79,9 +83,12 @@ function Week({ state, now }: { state: TrainingState; now: Date }) {
   );
 }
 
-function Chat({ state, update, signedIn, now, onSignIn, onWeek }: { state: TrainingState; update: Update; signedIn: boolean; now: Date; onSignIn: () => void; onWeek: () => void }) {
-  const { send, busy, error, steps } = useCoachChat(state, update);
+function Chat({ state, update, signedIn: real, now, onSignIn, onWeek }: { state: TrainingState; update: Update; signedIn: boolean; now: Date; onSignIn: () => void; onWeek: () => void }) {
+  const [demo] = useState(() => typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('demo'));
+  const signedIn = real || demo;
+  const { send, busy, error, steps } = useCoachChat(state, update, demo ? demoAsk : undefined);
   const [text, setText] = useState('');
+  const [voice, setVoice] = useState(false);
   const end = useRef<HTMLDivElement>(null);
   const lines = shownChat(state.coach?.chat);
   const replies = state.coach?.replies ?? [];
@@ -139,7 +146,14 @@ function Chat({ state, update, signedIn, now, onSignIn, onWeek }: { state: Train
             </div>
           ),
         )}
-        {busy && <div className="self-start px-2 text-[13px] text-ink-faint">{steps.at(-1) ?? 'Thinking'}…</div>}
+        {busy && (
+          <div className="flex items-center gap-3 self-start pl-1">
+            <CoachOrb mode="thinking" size={30} label="Working" />
+            <span key={steps.length} className="fade text-[14px] text-ink-muted">
+              {steps.at(-1) ?? 'Thinking'}…
+            </span>
+          </div>
+        )}
         {error && <div className="self-start px-2 text-[13px] text-ink-muted">{error}</div>}
         {!signedIn && (
           <Glass className="flex flex-col gap-4 px-5 py-5">
@@ -173,12 +187,19 @@ function Chat({ state, update, signedIn, now, onSignIn, onWeek }: { state: Train
             }}
           >
             <input value={text} onChange={(e) => setText(e.target.value)} placeholder="Message" aria-label="Message" maxLength={1000} className="min-w-0 flex-1 bg-transparent text-[16px] text-ink outline-none placeholder:text-ink-faint" />
-            <button type="submit" aria-label="Send" disabled={!text.trim() || busy} className="flex h-11 w-11 items-center justify-center press btn-primary rounded-full text-base disabled:opacity-30">
-              <ArrowUp size={18} strokeWidth={2.2} aria-hidden />
-            </button>
+            {demo && !text.trim() ? (
+              <button type="button" aria-label="Talk" onClick={() => setVoice(true)} className="flex h-11 w-11 items-center justify-center press btn-primary rounded-full text-base">
+                <AudioLines size={19} strokeWidth={2.1} aria-hidden />
+              </button>
+            ) : (
+              <button type="submit" aria-label="Send" disabled={!text.trim() || busy} className="flex h-11 w-11 items-center justify-center press btn-primary rounded-full text-base disabled:opacity-30">
+                <ArrowUp size={18} strokeWidth={2.2} aria-hidden />
+              </button>
+            )}
           </form>
         </div>
       )}
+      {voice && <Voice onClose={() => setVoice(false)} />}
     </>
   );
 }

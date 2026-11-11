@@ -57,6 +57,11 @@ with tight tracking.
   canvas behind the hero. `calm` slows it. Stops when the tab is hidden; still under reduced motion.
 - `Weave`: the logo as a clock (the rest screen): its five parts draw in one after another,
   counter-clockwise and ending on the iris part like the opening screen, as `value` grows, until the mark is whole.
+- `CoachOrb`: the weave as the coach's face (chat and voice). `thinking`: the parts draw in
+  counter-clockwise at one even pace, rest whole, turn once (slowing into the rest) and let go,
+  then weave again. `talking`: whole, each part pushed out a little with the voice level.
+  `listening`: whole, white parts dimmed, a slow breath. Leaving `thinking`, it finishes its weave
+  and lands whole. Painted each frame by `requestAnimationFrame`; still under reduced motion.
 - `TabBar`: floating glass pill, four icons (lucide), the open one lit.
 - `Screen`: a full screen with its glow, safe-area padding and room for the tab bar. `fit` locks it
   to the phone's height so nothing scrolls (the workout). `Label` is a
