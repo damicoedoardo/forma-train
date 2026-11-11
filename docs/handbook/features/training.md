@@ -49,7 +49,8 @@ timestamp: 2026-11-11
   shows "New best" over the rest clock. The screen stays on (`useWakeLock`). A friend's cheer
   shows on top. The close button offers finish now, pause, or drop. The
   last set finishes the workout.
-- **`ui/After.tsx`**: time, sets, records, the week, what went up, how it felt, Share.
+- **`ui/After.tsx`**: time, sets, records, the week (done of planned, else of the days picked at
+  setup), what went up, how it felt, Share.
 - **`ui/useTraining.ts`**: the React hook that loads the save, writes every change through
   `@/platform/store`, and hands screens `update(fn)`.
 
