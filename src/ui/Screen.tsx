@@ -7,7 +7,7 @@ export function Screen({ children, glow = '-left-10 -top-44', tabs = true, fit =
   return (
     <main
       className={`relative mx-auto flex max-w-[480px] flex-col px-4 ${fit ? 'h-[100dvh] overflow-hidden' : 'min-h-[100dvh] overflow-x-clip'} ${className}`}
-      style={{ paddingTop: 'calc(env(safe-area-inset-top) + 20px)', paddingBottom: tabs ? 'calc(env(safe-area-inset-bottom) + 100px)' : 'calc(env(safe-area-inset-bottom) + 24px)' }}
+      style={{ paddingTop: 'calc(env(safe-area-inset-top) + 20px)', paddingBottom: tabs ? 'calc(max(env(safe-area-inset-bottom) - 12px, 12px) + 84px)' : 'calc(env(safe-area-inset-bottom) + 24px)' }}
     >
       <Glow className={glow} mood={mood} />
       <div key={view} className={`rise relative flex flex-1 flex-col ${fit ? 'min-h-0' : ''}`}>
