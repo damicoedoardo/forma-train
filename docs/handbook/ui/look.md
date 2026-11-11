@@ -3,7 +3,7 @@ type: reference
 title: The look
 description: Forma's dark glass look — the color tokens, type, surfaces, buttons and tab bar, where each lives (tailwind.config.ts, globals.css, src/ui/), and the rules that keep it calm.
 tags: [ui, design, tokens, tailwind]
-timestamp: 2026-11-10
+timestamp: 2026-11-11
 ---
 
 # The look
@@ -76,6 +76,8 @@ seconds of rest pop; the end of rest buzzes and rings a soft two-note chime
 
 ## Rules
 
+- No scroll bars: `globals.css` hides them everywhere, and the page scrolls inside `body` so
+  phones hide it too.
 - One primary button per screen. Little text: a label is a word or two.
 - Touch targets at least 44px. Text at least 4.5:1 on the base.
 - Respect `prefers-reduced-motion` (`globals.css` stills all motion).
