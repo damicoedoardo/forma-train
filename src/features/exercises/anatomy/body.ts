@@ -43,6 +43,28 @@ export const INK = {
   arrowOn: '#A78BF5',
 };
 
+/** The richer look (2026-11-11): skin lit from above (a gradient the player defines, `SKIN_DEFS`),
+    soft edges, quiet muscle lines, the worked muscles lighting up with the effort. */
+export const INK_RICH: typeof INK = {
+  ...INK,
+  skin: 'url(#fm-skin)',
+  skinFar: 'url(#fm-far)',
+  edge: '#5E6070',
+  line: '#AFB1BD',
+  lineFar: '#7A7C88',
+  work: '#5D63EE',
+  workLine: '#4A50D8',
+  help: '#A78BF5',
+  helpLine: '#8F7FE8',
+  floor: 'url(#fm-floor)',
+};
+
+/** The colors in use while a scene is drawn. */
+let P: typeof INK = INK;
+/** How hard the worked muscles pull right now, 0 to 1 (the rich look fades them with it). */
+let EFFORT = 1;
+
+
 
 /** The floor as seen: a line side on, an oval from above. */
 function floorShape(exercise: AnatomyId, cam: Camera): V2[] {
@@ -197,6 +219,9 @@ export interface Shape {
   round?: boolean;
   /** See-through (shading). */
   opacity?: number;
+  /** The rich look's extras, drawn by the player in their own way: the faint body at the far end
+      of the move, the soft shadow on the floor, the light of a working muscle. */
+  kind?: 'ghost' | 'shadow' | 'glow';
 }
 
 export interface Scene {
@@ -434,7 +459,7 @@ function inset(p: Part, u: number, deg: number, k = 0.94): V3 {
 
 /** An arrow along a straight line, lit when the body moves its way. */
 function arrow(from: V2, to: V2, lit: 'from' | 'to' | 'both' | null): Shape[] {
-  const out: Shape[] = [{ d: `M${f1(from[0])} ${f1(from[1])}L${f1(to[0])} ${f1(to[1])}`, stroke: INK.arrow, width: 2.2, round: true }];
+  const out: Shape[] = [{ d: `M${f1(from[0])} ${f1(from[1])}L${f1(to[0])} ${f1(to[1])}`, stroke: P.arrow, width: 2.2, round: true }];
   const head = (tip: V2, back: V2, on: boolean) => {
     const dx = tip[0] - back[0];
     const dy = tip[1] - back[1];
@@ -444,7 +469,7 @@ function arrow(from: V2, to: V2, lit: 'from' | 'to' | 'both' | null): Shape[] {
     const s = 6;
     out.push({
       d: `M${f1(tip[0] - ux * s - uy * s * 0.75)} ${f1(tip[1] - uy * s + ux * s * 0.75)}L${f1(tip[0])} ${f1(tip[1])}L${f1(tip[0] - ux * s + uy * s * 0.75)} ${f1(tip[1] - uy * s - ux * s * 0.75)}`,
-      stroke: on ? INK.arrowOn : INK.arrow,
+      stroke: on ? P.arrowOn : P.arrow,
       width: 2.6,
       round: true,
     });
@@ -499,9 +524,31 @@ function partsOf(pose: Pose): { right: Limbs; left: Limbs; torso: Part; neck: Pa
 }
 
 /** Everything to draw for one moment of a rep. */
-export function scene(exercise: AnatomyId, view: View, t: number, opts: { still?: boolean; variant?: Variant } = {}): Scene {
+export function scene(exercise: AnatomyId, view: View, t: number, opts: { still?: boolean; variant?: Variant; rich?: boolean } = {}): Scene {
+  P = opts.rich ? INK_RICH : INK;
+  try {
+    return sceneOf(exercise, view, t, opts);
+  } finally {
+    P = INK;
+    EFFORT = 1;
+  }
+}
+
+/** A rep for the rich look: a slow, controlled way down, a short hold, a quicker way back. */
+function tempo(t: number): { depth: number; dir: 'down' | 'up' | null } {
+  const x = ((t % 1) + 1) % 1;
+  const ease = (k: number) => k * k * (3 - 2 * k);
+  if (x < 0.06) return { depth: 0, dir: null };
+  if (x < 0.52) return { depth: ease((x - 0.06) / 0.46), dir: 'down' };
+  if (x < 0.62) return { depth: 1, dir: null };
+  if (x < 0.92) return { depth: 1 - ease((x - 0.62) / 0.3), dir: 'up' };
+  return { depth: 0, dir: null };
+}
+
+function sceneOf(exercise: AnatomyId, view: View, t: number, opts: { still?: boolean; variant?: Variant; rich?: boolean }): Scene {
   const v = opts.variant ?? {};
   const demo = DEMOS[exercise];
+  if (opts.rich) return richScene(exercise, view, t, opts);
   // A loop (circles) runs round once per rep; a hold stands still.
   const { depth, dir } = demo.loop ? { depth: opts.still ? 0 : ((t % 1) + 1) % 1, dir: null } : opts.still || !demo.mover ? { depth: 1, dir: null } : phase(t);
   const cam = camera(cameraOf(exercise, view, v));
@@ -509,10 +556,43 @@ export function scene(exercise: AnatomyId, view: View, t: number, opts: { still?
   const level = Math.abs(cam.c[1]) < 0.01;
   const shapes: Shape[] = [];
   // Hanging moves have no floor in the picture.
-  if (demo.floor) shapes.push(level ? { d: `M${f1(box.x)} 0.6H${f1(box.x + box.w)}`, stroke: INK.floor, width: 1.2 } : { d: closed(floorShape(exercise, cam)), fill: INK.shadow });
+  if (demo.floor) shapes.push(level ? { d: `M${f1(box.x)} 0.6H${f1(box.x + box.w)}`, stroke: P.floor, width: 1.2 } : { d: closed(floorShape(exercise, cam)), fill: P.shadow });
   shapes.push(...draw(exercise, cam, depth, v));
   const lit = opts.still ? 'both' : dir === 'down' ? 'to' : dir === 'up' ? 'from' : null;
   if (box.arrow) shapes.push(...arrow(box.arrow[0], box.arrow[1], lit));
+  return { viewBox: `${f1(box.x)} ${f1(box.y)} ${f1(box.w)} ${f1(box.h)}`, shapes };
+}
+
+/** The rich look: no arrow. The far end of the move stands behind as a faint body, the floor
+    carries a soft shadow, and the worked muscles light up as the effort grows. */
+function richScene(exercise: AnatomyId, view: View, t: number, opts: { still?: boolean; variant?: Variant }): Scene {
+  const v = opts.variant ?? {};
+  const demo = DEMOS[exercise];
+  const moves = !!demo.mover && !demo.loop;
+  const { depth } = demo.loop ? { depth: opts.still ? 0 : ((t % 1) + 1) % 1 } : opts.still || !demo.mover ? { depth: 1 } : tempo(t);
+  EFFORT = moves ? 0.25 + 0.75 * depth : demo.loop ? 0.7 : 0.85 + 0.15 * Math.sin(t * Math.PI * 2);
+  const cam = camera(cameraOf(exercise, view, v));
+  const box = frame(exercise, view, v);
+  const level = Math.abs(cam.c[1]) < 0.01;
+  const shapes: Shape[] = [];
+  const bodyOf = (d: number) => {
+    const { right, left, torso, neck, head } = partsOf(poseOf(exercise, d, v));
+    return [torso, neck, head, ...Object.values(right), ...Object.values(left)].map((p) => outline(p, cam));
+  };
+  if (demo.floor) {
+    if (level) {
+      shapes.push({ d: `M${f1(box.x)} 0.6H${f1(box.x + box.w)}`, stroke: P.floor, width: 1 });
+      const xs = bodyOf(depth).flat().map((q) => q[0]);
+      const x0 = Math.min(...xs);
+      const x1 = Math.max(...xs);
+      const rx = Math.max(14, (x1 - x0) * 0.46);
+      const cx = (x0 + x1) / 2;
+      shapes.push({ d: `M${f1(cx - rx)} 1.2A${f1(rx)} 3 0 1 0 ${f1(cx + rx)} 1.2A${f1(rx)} 3 0 1 0 ${f1(cx - rx)} 1.2Z`, fill: '#000000', opacity: 0.55, kind: 'shadow' });
+    } else shapes.push({ d: closed(floorShape(exercise, cam)), fill: P.shadow });
+  }
+  // Where the move goes: the body at its far end, faint, while you are away from it.
+  if (moves && !opts.still) for (const pts of bodyOf(1)) shapes.push({ d: closed(pts), fill: '#ffffff', kind: 'ghost' });
+  shapes.push(...draw(exercise, cam, depth, v));
   return { viewBox: `${f1(box.x)} ${f1(box.y)} ${f1(box.w)} ${f1(box.h)}`, shapes };
 }
 
@@ -529,12 +609,12 @@ const line = (a: V2, b: V2) => `M${f1(a[0])} ${f1(a[1])}L${f1(b[0])} ${f1(b[1])}
 
 /** A bar along z with plates, the far plate first. */
 function weight(cam: Camera, at: V3, o: { half: number; plateAt: number; plateR: number }, handle: number): Shape[] {
-  const out: Shape[] = [{ d: line(project(cam, add(at, [0, 0, -o.half])), project(cam, add(at, [0, 0, o.half]))), stroke: INK.bar, width: handle, round: true }];
+  const out: Shape[] = [{ d: line(project(cam, add(at, [0, 0, -o.half])), project(cam, add(at, [0, 0, o.half]))), stroke: P.bar, width: handle, round: true }];
   const sides = [-1, 1].sort((a, b) => a * cam.c[2] - b * cam.c[2]);
   const t = o.plateR / 9;
   for (const s of sides) {
-    for (const dz of [-t, 0, t]) out.push({ d: closed(disc(cam, add(at, [0, 0, s * (o.plateAt + dz)]), o.plateR)), fill: INK.plate, stroke: INK.plateRim, width: 1 });
-    out.push({ d: closed(disc(cam, add(at, [0, 0, s * (o.plateAt + t)]), o.plateR * 0.14)), fill: INK.plateRim });
+    for (const dz of [-t, 0, t]) out.push({ d: closed(disc(cam, add(at, [0, 0, s * (o.plateAt + dz)]), o.plateR)), fill: P.plate, stroke: P.plateRim, width: 1 });
+    out.push({ d: closed(disc(cam, add(at, [0, 0, s * (o.plateAt + t)]), o.plateR * 0.14)), fill: P.plateRim });
   }
   return out;
 }
@@ -587,19 +667,19 @@ function gear(cam: Camera, prop: Prop): Shape[] {
     const ball = project(cam, add(prop.at, [0, -KETTLEBELL.drop, 0]));
     const handle = project(cam, prop.at);
     return [
-      { d: closed(ring2(handle, 5)), stroke: INK.plateRim, width: 2.6 },
-      { d: closed(ring2(ball, KETTLEBELL.r)), fill: INK.plate, stroke: INK.plateRim, width: 1.2 },
+      { d: closed(ring2(handle, 5)), stroke: P.plateRim, width: 2.6 },
+      { d: closed(ring2(ball, KETTLEBELL.r)), fill: P.plate, stroke: P.plateRim, width: 1.2 },
     ];
   }
-  if (prop.kind === 'box') return [{ d: polygon(hull(boxCorners(prop.at, prop.size).map((q) => project(cam, q)))), fill: INK.plate, stroke: INK.plateRim, width: 1.2 }];
-  if (prop.kind === 'ball') return [{ d: closed(ring2(project(cam, prop.at), prop.r ?? BALL)), fill: INK.plate, stroke: INK.plateRim, width: 1.2 }];
+  if (prop.kind === 'box') return [{ d: polygon(hull(boxCorners(prop.at, prop.size).map((q) => project(cam, q)))), fill: P.plate, stroke: P.plateRim, width: 1.2 }];
+  if (prop.kind === 'ball') return [{ d: closed(ring2(project(cam, prop.at), prop.r ?? BALL)), fill: P.plate, stroke: P.plateRim, width: 1.2 }];
   if (prop.kind === 'tube') {
     const a = project(cam, prop.from);
     const b = project(cam, prop.to);
     const w = prop.width ?? 3;
     return [
-      { d: line(a, b), stroke: INK.plateRim, width: w + 1.6, round: true },
-      { d: line(a, b), stroke: INK.plate, width: w, round: true },
+      { d: line(a, b), stroke: P.plateRim, width: w + 1.6, round: true },
+      { d: line(a, b), stroke: P.plate, width: w, round: true },
     ];
   }
   if (prop.kind === 'roller') {
@@ -607,41 +687,41 @@ function gear(cam: Camera, prop: Prop): Shape[] {
     const ends = [-1, 1].map((s) => disc(cam, add(prop.at, [0, 0, s * ROLLER.half]), ROLLER.r));
     const near = cam.c[2] >= 0 ? ends[1] : ends[0];
     return [
-      { d: polygon(hull([...ends[0], ...ends[1]])), fill: INK.plate, stroke: INK.plateRim, width: 1.2 },
-      { d: closed(near), fill: INK.plate, stroke: INK.plateRim, width: 1 },
+      { d: polygon(hull([...ends[0], ...ends[1]])), fill: P.plate, stroke: P.plateRim, width: 1.2 },
+      { d: closed(near), fill: P.plate, stroke: P.plateRim, width: 1 },
     ];
   }
   if (prop.kind === 'cable') {
     const a = project(cam, prop.from);
     return [
-      { d: line(a, project(cam, prop.to)), stroke: INK.line, width: 1 },
-      { d: closed(disc(cam, prop.from, 3.5)), fill: INK.plate, stroke: INK.plateRim, width: 1 },
+      { d: line(a, project(cam, prop.to)), stroke: P.line, width: 1 },
+      { d: closed(disc(cam, prop.from, 3.5)), fill: P.plate, stroke: P.plateRim, width: 1 },
     ];
   }
   if (prop.kind === 'bars') {
     // Far bar first.
     const segs = dipBars(prop.at).sort((p, q) => dot(add(p[0], p[1]), cam.c) - dot(add(q[0], q[1]), cam.c));
     return segs.flatMap(([a, b]) => [
-      { d: line(project(cam, a), project(cam, b)), stroke: INK.plateRim, width: 4.4, round: true },
-      { d: line(project(cam, a), project(cam, b)), stroke: INK.bar, width: 2.8, round: true },
+      { d: line(project(cam, a), project(cam, b)), stroke: P.plateRim, width: 4.4, round: true },
+      { d: line(project(cam, a), project(cam, b)), stroke: P.bar, width: 2.8, round: true },
     ]);
   }
   if (prop.kind === 'pullbar') {
     const h = prop.half ?? 75;
     const ends = [add(prop.at, [0, 0, -h]), add(prop.at, [0, 0, h])].map((q) => project(cam, q));
     return [
-      { d: line(ends[0], ends[1]), stroke: INK.plateRim, width: 4.4, round: true },
-      { d: line(ends[0], ends[1]), stroke: INK.bar, width: 2.8, round: true },
+      { d: line(ends[0], ends[1]), stroke: P.plateRim, width: 4.4, round: true },
+      { d: line(ends[0], ends[1]), stroke: P.bar, width: 2.8, round: true },
     ];
   }
   const out: Shape[] = [];
   for (const k of prop.noLegs ? [] : [0.12, 0.88]) {
     const top = add(prop.from, mul(sub(prop.to, prop.from), k));
     for (const z of [-BENCH.half + 4, BENCH.half - 4]) {
-      out.push({ d: line(project(cam, add(top, [0, -BENCH.thick, z])), project(cam, [top[0], 0, z])), stroke: INK.plate, width: 2.6, round: true });
+      out.push({ d: line(project(cam, add(top, [0, -BENCH.thick, z])), project(cam, [top[0], 0, z])), stroke: P.plate, width: 2.6, round: true });
     }
   }
-  out.push({ d: closed(hull(benchBox(prop.from, prop.to).map((q) => project(cam, q)))), fill: INK.plate, stroke: INK.plateRim, width: 1.2 });
+  out.push({ d: closed(hull(benchBox(prop.from, prop.to).map((q) => project(cam, q)))), fill: P.plate, stroke: P.plateRim, width: 1.2 });
   return out;
 }
 
@@ -673,6 +753,7 @@ function draw(exercise: AnatomyId, cam: Camera, depth: number, v: Variant): Shap
   const pose = poseOf(exercise, depth, v);
   const work = WORKS[exercise];
   const shapes: Shape[] = [];
+  const rich = P === INK_RICH;
   const { right, left, torso, neck, head } = partsOf(pose);
 
   // Side on, the far limbs are behind, shaded; nearer the front, both sides are drawn alike.
@@ -692,14 +773,14 @@ function draw(exercise: AnatomyId, cam: Camera, depth: number, v: Variant): Shap
     const depthOf = (p: Part) => dot(add(p.a, p.b), cam.c);
     const sorted = [...parts].sort((a, b) => depthOf(a) - depthOf(b));
     const paths = sorted.map((p) => closed(outline(p, cam)));
-    for (const d of paths) shapes.push({ d, stroke: INK.edge, width: 1.8 });
+    for (const d of paths) shapes.push({ d, stroke: P.edge, width: rich ? 1.1 : 1.8 });
     sorted.forEach((p, i) => {
-      shapes.push({ d: paths[i], fill: dim ? INK.skinFar : INK.skin });
+      shapes.push({ d: paths[i], fill: dim ? P.skinFar : P.skin });
       for (const m of MARKS) {
-        if (m.part !== p.id) continue;
+        if (m.part !== p.id || rich) continue;
         for (const mirror of [false, true]) {
           const pts = patch(p, m, mirror, cam);
-          if (pts) shapes.push({ d: closed(pts), fill: dim ? INK.skinFar : INK.skin, stroke: dim ? INK.lineFar : INK.edge, width: 0.9 });
+          if (pts) shapes.push({ d: closed(pts), fill: dim ? P.skinFar : P.skin, stroke: dim ? P.lineFar : P.edge, width: 0.9 });
         }
       }
       for (const m of MUSCLES) {
@@ -708,14 +789,21 @@ function draw(exercise: AnatomyId, cam: Camera, depth: number, v: Variant): Shap
           const pts = patch(p, m, mirror, cam);
           if (!pts) continue;
           const d = closed(pts);
-          if (work.main.includes(m.id)) shapes.push({ d, fill: dim ? INK.workLine : INK.work, stroke: INK.workLine, width: 0.7 });
-          else if (work.help.includes(m.id)) shapes.push({ d, fill: dim ? INK.helpLine : INK.help, stroke: INK.helpLine, width: 0.6 });
-          else shapes.push({ d, stroke: dim ? INK.lineFar : INK.line, width: 0.6 });
+          if (rich && work.main.includes(m.id)) {
+            shapes.push({ d, stroke: P.line, width: 0.5 });
+            shapes.push({ d, fill: P.work, opacity: (dim ? 0.45 : 0.62) + 0.38 * EFFORT });
+            if (!dim && EFFORT > 0.3) shapes.push({ d, fill: P.work, opacity: 0.55 * (EFFORT - 0.3), kind: 'glow' });
+          } else if (rich && work.help.includes(m.id)) {
+            shapes.push({ d, stroke: P.line, width: 0.5 });
+            shapes.push({ d, fill: P.help, opacity: (dim ? 0.25 : 0.4) + 0.35 * EFFORT });
+          } else if (work.main.includes(m.id)) shapes.push({ d, fill: dim ? P.workLine : P.work, stroke: P.workLine, width: 0.7 });
+          else if (work.help.includes(m.id)) shapes.push({ d, fill: dim ? P.helpLine : P.help, stroke: P.helpLine, width: 0.6 });
+          else shapes.push({ d, stroke: dim ? P.lineFar : P.line, width: rich ? 0.45 : 0.6 });
         }
       }
       // Soft light and shade, so each part reads round.
       const sh = shade(p, cam);
-      if (sh.lit && !dim) shapes.push({ d: closed(sh.lit), fill: '#ffffff', opacity: 0.22 });
+      if (sh.lit && !dim) shapes.push({ d: closed(sh.lit), fill: '#ffffff', opacity: rich ? 0.14 : 0.22 });
       if (sh.soft) shapes.push({ d: closed(sh.soft), fill: '#000000', opacity: 0.12 });
       if (sh.deep) shapes.push({ d: closed(sh.deep), fill: '#000000', opacity: 0.1 });
     });
@@ -766,7 +854,7 @@ function draw(exercise: AnatomyId, cam: Camera, depth: number, v: Variant): Shap
   bells.filter(nearSide).forEach((b) => shapes.push(...gear(cam, b)));
   // A pull-up bar seen end on is a dot in the fist: draw it over the hands.
   for (const p of pose.props) {
-    if (p.kind === 'pullbar' && Math.abs(cam.c[2]) > 0.9) shapes.push({ d: closed(disc(cam, p.at, 3.2)), fill: INK.bar, stroke: INK.plateRim, width: 1.2 });
+    if (p.kind === 'pullbar' && Math.abs(cam.c[2]) > 0.9) shapes.push({ d: closed(disc(cam, p.at, 3.2)), fill: P.bar, stroke: P.plateRim, width: 1.2 });
   }
   return shapes;
 }
