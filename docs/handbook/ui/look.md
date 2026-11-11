@@ -42,12 +42,14 @@ with tight tracking.
 - `Glow`: the light behind a screen: a main light and a fainter one low on the other side, a
   base a little brighter at the top, and a fine grain over it all. `Screen`'s `mood` sets the
   colors, and they shift slowly: `calm` (blue and iris, the tabs), `work` (violet and a warm
-  ember, a set under way), `rest` (cool teal blue), `done` (gold, the screen after).
+  ember, a set under way), `rest` (deep indigo, quieter than calm), `done` (gold, the screen after).
 - `.hero` (`globals.css`): the one rich surface, a deep indigo card with a soft light in its
   top corner. Today's workout sits in it with the week ring and the week's days. One a screen at
   most; everything else stays glass.
 - `Mark`: the weave (five parts of a ring, each tucked under the next, one in iris) and the
   name "Forma", top left on Today.
+- `Weave`: the logo as a clock (the rest screen): its five parts draw in one after another as
+  `value` grows, until the mark is whole.
 - `TabBar`: floating glass pill, four icons (lucide), the open one lit.
 - `Screen`: a full screen with its glow, safe-area padding and room for the tab bar. `Label` is a
   small muted heading; `Chip` a small pill to tap (a quick reply, a setup choice).

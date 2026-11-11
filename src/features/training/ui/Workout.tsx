@@ -1,16 +1,19 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import { Check, Play, Undo2, X } from 'lucide-react';
-import { Avatar, Button, Glass, Ring, Screen, Segmented } from '@/ui';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Check, CirclePlay, Undo2, X } from 'lucide-react';
+import { Avatar, Button, Glass, Ring, Screen, Segmented, Weave } from '@/ui';
 import { useNow } from '@/platform/useNow';
 import { useWakeLock } from '@/platform/useWakeLock';
 import { armChime, chime } from '@/platform/chime';
-import { videoOf, videoSearchUrl, videoWatchUrl } from '@/features/exercises/videos';
-import { clockStart, isTap, REST_SECONDS, todaysWorkout, type Rir, type TrainingState } from '../session';
+import { anatomyFor } from '@/features/exercises/anatomy/body';
+import { clockStart, isTap, REST_SECONDS, todaysWorkout, type Rir, type TrainingState, type WorkoutExercise } from '../session';
+import { BodyDemo } from './BodyDemo';
+import { ExercisePage } from './ExercisePage';
 import { beatsBest, clockText, currentIndex, FEEL, lastTime, logSet, restFor, setCount, setsOf, setsWanted, skipRest, startReps, undoSet } from '../workout';
 
-/* The workout: one exercise at a time, a big counter, how it felt, Log set. A rest clock after
+/* The workout: one exercise at a time. Our animation of it, large and bare on the screen's light
+   (a tap opens its page), its name, the sets as bars, the counter, how it felt, Log set. A rest clock after
    each set, with a buzz and a chime when it ends. A set that beats your best gets a moment. The
    screen stays on. A friend's cheer shows on top. */
 
@@ -38,6 +41,9 @@ export function Workout({ state, update, onFinish, onLeave, onDrop, cheer, onChe
   // The set just logged beat your best: its reps, shown over the rest clock.
   const [best, setBest] = useState<number | null>(null);
   const resting = useRef(false);
+  // The exercise's page, opened from its animation.
+  const [page, setPage] = useState<WorkoutExercise | null>(null);
+  const closePage = useCallback(() => setPage(null), []);
   useWakeLock();
 
   // A new exercise or set: the counter starts from where you are.
@@ -98,11 +104,26 @@ export function Workout({ state, update, onFinish, onLeave, onDrop, cheer, onChe
     for (let i = (at < 0 ? workout.length : at) - 1; i >= 0; i--) if (setsOf(state, workout[i].id).length) return workout[i];
     return q && setsOf(state, q.id).length ? q : null;
   })();
-  const howTo = q ? videoOf(q.id) : null;
   const done = q ? setsOf(state, q.id).length : 0;
   const last = q ? lastTime(state, q.id) : null;
   const unit = q?.unit === 'sec' ? 's' : '';
   const ahead = !!q && !isTap(q) && beatsBest(state, q.id, reps);
+  const moves = !!q && !!anatomyFor(q.move, q.name);
+  // "How to": opens the exercise's page (the video, what to do, what to avoid).
+  const howTo = (
+    <span className="glass flex h-9 items-center gap-1.5 rounded-pill pl-2.5 pr-3.5 text-[13px] text-ink-soft">
+      <CirclePlay size={16} strokeWidth={1.75} aria-hidden />
+      How to
+    </span>
+  );
+  // The animation is the screen's centerpiece, as tall as the phone allows. It and its "How to"
+  // chip open the page; with no animation the chip stands alone under the name.
+  const demo = q && moves && (
+    <button type="button" aria-label={`How to do ${q.name}`} onClick={() => setPage(q)} className="press relative mt-1 block w-full">
+      <BodyDemo bare move={q.move} name={q.name} className="h-[clamp(120px,calc(100dvh-470px),360px)] w-full" />
+      <span className="absolute bottom-1 right-0">{howTo}</span>
+    </button>
+  );
 
   return (
     <Screen tabs={false} glow="left-[-15px] top-[120px]" mood={restLeft > 0 ? 'rest' : 'work'} view={restLeft > 0 ? 'rest' : (q?.id ?? 'end')}>
@@ -111,13 +132,7 @@ export function Workout({ state, update, onFinish, onLeave, onDrop, cheer, onChe
           <X size={18} strokeWidth={2} aria-hidden />
         </button>
         <span className="text-[15px] tabular-nums text-ink-muted">{clock}</span>
-        {q ? (
-          <a href={howTo ? videoWatchUrl(howTo.id) : videoSearchUrl(q.name)} target="_blank" rel="noreferrer" aria-label="How to do it" className="glass press flex h-11 w-11 items-center justify-center rounded-full">
-            <Play size={16} fill="currentColor" strokeWidth={0} aria-hidden />
-          </a>
-        ) : (
-          <span className="w-11" />
-        )}
+        <span className="w-11" />
       </div>
 
       {cheer && (
@@ -131,9 +146,11 @@ export function Workout({ state, update, onFinish, onLeave, onDrop, cheer, onChe
 
       {restLeft > 0 ? (
         <div className="flex flex-1 flex-col items-center">
-          <span className="mt-14 text-[15px] text-ink-muted">Rest</span>
-          <Ring className="mt-6" value={restLeft / Math.max(restTotal, restLeft, 1)} flash={best !== null} label={`Rest, ${restLeft} seconds left`}>
-            <span key={restLeft <= 3 ? restLeft : 'rest'} className={`num font-display text-[72px] font-normal leading-[76px] tracking-[-2.5px] ${restLeft <= 3 ? 'pop' : ''}`}>
+          {/* The clock sits in the middle of the screen: the logo, weaving in as you recover. */}
+          <div className="my-auto flex flex-col items-center pb-6">
+          <span className="text-[15px] text-ink-muted">Rest</span>
+          <Weave className="mt-6" value={1 - (restLeft - 1) / Math.max(restTotal, restLeft, 1)} flash={best !== null} label={`Rest, ${restLeft} seconds left`}>
+            <span key={restLeft <= 3 ? restLeft : 'rest'} className={`num font-display text-[64px] font-normal leading-[68px] tracking-[-2px] ${restLeft <= 3 ? 'pop' : ''}`}>
               {clockText(restLeft * 1000)}
             </span>
             {best !== null && (
@@ -143,47 +160,68 @@ export function Workout({ state, update, onFinish, onLeave, onDrop, cheer, onChe
                 {unit}
               </span>
             )}
-          </Ring>
-          {q && <span className="mt-6 text-[14px] text-ink-faint">Next: {q.name}</span>}
+          </Weave>
+          {q && (
+            <span className="mt-6 flex items-center gap-3 text-[14px] text-ink-faint">
+              {moves && <BodyDemo small move={q.move} name={q.name} className="h-[44px] w-[44px] rounded-[12px]" />}
+              Next: {q.name}
+            </span>
+          )}
+          </div>
           <Button kind="glass" className="mt-auto w-full" onClick={() => update(skipRest)}>
             Skip rest
           </Button>
         </div>
       ) : q ? (
         <>
-          <span className="mt-12 text-center text-[15px] text-ink-muted">{q.name}</span>
+          {demo}
+          <h1 className={`${moves ? 'mt-1' : 'mt-12'} text-center font-display text-[26px] font-medium leading-8 tracking-[-0.5px]`}>{q.name}</h1>
+          {!moves && (
+            <button type="button" aria-label={`How to do ${q.name}`} onClick={() => setPage(q)} className="press mx-auto mt-3">
+              {howTo}
+            </button>
+          )}
 
           {isTap(q) ? (
-            <div className="mt-6 flex flex-col items-center gap-5 px-4 text-center">
-              <Ring of={1} done={0} label={q.name}>
-                <span className="num font-display text-[72px] font-normal leading-[76px] tracking-[-2.5px]">
+            <div className="mt-5 flex flex-col items-center gap-5 px-4 text-center">
+              <Ring size={moves ? 184 : undefined} of={1} done={0} label={q.name}>
+                <span className={`num font-display font-normal ${moves ? 'text-[60px] leading-[64px] tracking-[-2px]' : 'text-[72px] leading-[76px] tracking-[-2.5px]'}`}>
                   {q.reps}
-                  <span className="text-[32px] text-ink-muted">{unit}</span>
+                  <span className="text-[28px] text-ink-muted">{unit}</span>
                 </span>
               </Ring>
-              <span className="text-[14px] leading-5 text-ink-faint">{q.cue}</span>
+              <span className="text-[14px] leading-5 text-ink-muted">{q.cue}</span>
             </div>
           ) : (
             <>
-              <div className="mt-6 flex items-center justify-between">
-                <button type="button" aria-label="One less" onClick={() => setReps((r) => Math.max(0, r - (q.unit === 'sec' ? 5 : 1)))} className="glass press h-[52px] w-[52px] shrink-0 rounded-full text-[24px]">
+              {/* The sets as short bars: done, the one you are on, to come. */}
+              <div className="mt-2.5 flex items-center justify-center gap-3">
+                <span className="text-[13px] text-ink-muted">
+                  Set {Math.min(done + 1, q.sets)} of {q.sets}
+                </span>
+                <span aria-hidden className="flex gap-1">
+                  {Array.from({ length: q.sets }, (_, i) => (
+                    <span key={i} className={`h-1 w-5 rounded-full ${i < done ? 'bg-ink' : i === done ? 'bg-gradient-to-r from-accent to-accent-iris' : 'bg-white/[0.12]'}`} />
+                  ))}
+                </span>
+              </div>
+
+              <Glass className="mt-5 flex items-center justify-between rounded-[28px] p-2.5">
+                <button type="button" aria-label="One less" onClick={() => setReps((r) => Math.max(0, r - (q.unit === 'sec' ? 5 : 1)))} className="press h-14 w-14 shrink-0 rounded-full bg-white/[0.07] text-[24px] text-ink-soft">
                   −
                 </button>
-                <Ring size={232} of={q.sets} done={done} label={`Set ${done + 1} of ${q.sets}`}>
-                  <span key={reps} className={`pop num font-display text-[104px] font-normal leading-[104px] tracking-[-4px] ${ahead ? 'best-num' : ''}`}>
+                <span role="img" aria-label={`${reps}${unit ? ' seconds' : ' reps'}`} className="flex flex-col items-center">
+                  <span key={reps} className={`pop num font-display text-[56px] font-normal leading-[56px] tracking-[-2px] ${ahead ? 'best-num' : ''}`}>
                     {reps}
-                    {unit && <span className="text-[40px] tracking-normal text-ink-muted">{unit}</span>}
+                    {unit && <span className="text-[26px] tracking-normal text-ink-muted">{unit}</span>}
                   </span>
-                  <span className={`text-[13px] ${ahead ? 'text-win-soft' : 'text-ink-faint'}`}>{ahead ? `last ${last}${unit} · +${reps - (last ?? 0)}` : last !== null ? `last ${last}${unit}` : `target ${q.reps}${unit}`}</span>
-                </Ring>
-                <button type="button" aria-label="One more" onClick={() => setReps((r) => r + (q.unit === 'sec' ? 5 : 1))} className="glass press h-[52px] w-[52px] shrink-0 rounded-full text-[24px]">
+                  <span className={`mt-0.5 text-[13px] ${ahead ? 'text-win-soft' : 'text-ink-faint'}`}>{ahead ? `last ${last}${unit} · +${reps - (last ?? 0)}` : last !== null ? `last ${last}${unit}` : `target ${q.reps}${unit}`}</span>
+                </span>
+                <button type="button" aria-label="One more" onClick={() => setReps((r) => r + (q.unit === 'sec' ? 5 : 1))} className="press h-14 w-14 shrink-0 rounded-full bg-white/[0.07] text-[24px] text-ink-soft">
                   +
                 </button>
-              </div>
-              <span className="mt-4 text-center text-[13px] text-ink-faint">
-                Set {Math.min(done + 1, q.sets)} of {q.sets}
-              </span>
-              <div className="mt-8">
+              </Glass>
+              <div className="mt-3">
                 <Segmented label="How it felt" options={FEEL} value={feel} onChange={setFeel} />
               </div>
             </>
@@ -213,6 +251,8 @@ export function Workout({ state, update, onFinish, onLeave, onDrop, cheer, onChe
           </Button>
         </div>
       )}
+
+      {page && <ExercisePage q={page} onClose={closePage} />}
 
       {menu && (
         <div className="fade fixed inset-0 z-30 flex items-end bg-black/55 px-4 pb-8" onClick={() => setMenu(false)}>

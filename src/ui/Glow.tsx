@@ -8,7 +8,7 @@ export type Mood = 'calm' | 'work' | 'rest' | 'done';
 const LIGHT: Record<Mood, [string, string]> = {
   calm: ['#494FDF', '#A78BF5'],
   work: ['#5A4BE6', '#E0794A'],
-  rest: ['#2C8FB0', '#494FDF'],
+  rest: ['#3D43CF', '#8C84F3'],
   done: ['#D09A45', '#5A4BE6'],
 };
 
