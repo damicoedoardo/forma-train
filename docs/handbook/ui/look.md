@@ -51,7 +51,8 @@ with tight tracking.
 - `Weave`: the logo as a clock (the rest screen): its five parts draw in one after another as
   `value` grows, until the mark is whole.
 - `TabBar`: floating glass pill, four icons (lucide), the open one lit.
-- `Screen`: a full screen with its glow, safe-area padding and room for the tab bar. `Label` is a
+- `Screen`: a full screen with its glow, safe-area padding and room for the tab bar. `fit` locks it
+  to the phone's height so nothing scrolls (the workout). `Label` is a
   small muted heading; `Chip` a small pill to tap (a quick reply, a setup choice).
 - `Stats`: a row of big numbers with a word under each (sets, this week, streak).
 - `Avatar`: a round photo, or the initials on one of four quiet tones.
