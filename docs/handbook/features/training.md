@@ -33,14 +33,15 @@ timestamp: 2026-11-11
 - **`ui/BodyDemo.tsx`**: plays an exercise's anatomy animation (`features/exercises/anatomy`)
   in the rich look at about 30 fps: it defines the gradients and blurs under its own ids and
   layers the shadow, the ghost, the body and the glow. `small` (Today's rows) leaves out the
-  blurs. A quiet dumbbell tile when the move has none.
+  blurs; `bare` drops the tile behind the body. A quiet dumbbell tile when the move has none.
 - **`ui/ExercisePage.tsx`**: one exercise, opened from Today: the video on top, the animation
   with the muscles it works, then Do and
   Avoid (`guideFor` in `features/exercises/guide.ts`). It covers the screen; the phone's back
   closes it.
-- **`ui/Workout.tsx`**: one exercise at a time: our animation of it on top (`BodyDemo`, as tall
-  as the phone allows; a tap opens `ExercisePage`), one thing to do and one to avoid
-  (`guideFor`, a new pair each set), the counter, how it felt, Log set, then the rest
+- **`ui/Workout.tsx`**: one exercise at a time: our animation of it, large and with no tile
+  behind it (`BodyDemo bare`, as tall as the phone allows; a tap opens `ExercisePage`), its
+  name, the sets as short bars, a glass card with one thing to do and one to avoid (`guideFor`,
+  a new pair each set), the counter in a glass row with − and +, how it felt, Log set, then the rest
   clock (with the next exercise and its small animation), which buzzes and chimes when it runs out (not when skipped). A set that beats your best
   shows "New best" over the rest clock. The screen stays on (`useWakeLock`). A friend's cheer
   shows on top. The close button offers finish now, pause, or drop. The

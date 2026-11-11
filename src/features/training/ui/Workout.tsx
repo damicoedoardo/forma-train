@@ -15,8 +15,9 @@ import { BodyDemo } from './BodyDemo';
 import { ExercisePage } from './ExercisePage';
 import { beatsBest, clockText, currentIndex, FEEL, lastTime, logSet, restFor, setCount, setsOf, setsWanted, skipRest, startReps, undoSet } from '../workout';
 
-/* The workout: one exercise at a time. Our animation of it on top (a tap opens its page), one
-   thing to do and one to avoid, the counter, how it felt, Log set. A rest clock after
+/* The workout: one exercise at a time. Our animation of it, large and bare on the screen's light
+   (a tap opens its page), its name, the sets as bars, one thing to do and one to avoid, the
+   counter, how it felt, Log set. A rest clock after
    each set, with a buzz and a chime when it ends. A set that beats your best gets a moment. The
    screen stays on. A friend's cheer shows on top. */
 
@@ -131,9 +132,10 @@ export function Workout({ state, update, onFinish, onLeave, onDrop, cheer, onChe
   // One thing to do and one to avoid, a new pair each set.
   const tipDo = guide?.dos.length ? guide.dos[done % guide.dos.length] : null;
   const tipNot = guide?.donts.length ? guide.donts[done % guide.donts.length] : null;
+  // The animation is the screen's centerpiece, as tall as the phone allows; a tap opens the page.
   const demo = q && moves && (
-    <button type="button" aria-label={`${q.name}: how to do it`} onClick={() => setPage(q)} className="press mt-4 block w-full overflow-hidden rounded-[24px] border border-white/10">
-      <BodyDemo move={q.move} name={q.name} className="h-[clamp(84px,calc(100dvh-640px),200px)] w-full" />
+    <button type="button" aria-label={`${q.name}: how to do it`} onClick={() => setPage(q)} className="press mt-1 block w-full">
+      <BodyDemo bare move={q.move} name={q.name} className="h-[clamp(120px,calc(100dvh-540px),320px)] w-full" />
     </button>
   );
 
@@ -190,55 +192,65 @@ export function Workout({ state, update, onFinish, onLeave, onDrop, cheer, onChe
       ) : q ? (
         <>
           {demo}
-          <span className={`${moves ? 'mt-4' : 'mt-12'} text-center text-[15px] text-ink-muted`}>{q.name}</span>
+          <h1 className={`${moves ? 'mt-1' : 'mt-12'} text-center font-display text-[26px] font-medium leading-8 tracking-[-0.5px]`}>{q.name}</h1>
 
           {isTap(q) ? (
-            <div className="mt-6 flex flex-col items-center gap-5 px-4 text-center">
-              <Ring size={moves ? 200 : undefined} of={1} done={0} label={q.name}>
-                <span className="num font-display text-[72px] font-normal leading-[76px] tracking-[-2.5px]">
+            <div className="mt-5 flex flex-col items-center gap-5 px-4 text-center">
+              <Ring size={moves ? 184 : undefined} of={1} done={0} label={q.name}>
+                <span className={`num font-display font-normal ${moves ? 'text-[60px] leading-[64px] tracking-[-2px]' : 'text-[72px] leading-[76px] tracking-[-2.5px]'}`}>
                   {q.reps}
-                  <span className="text-[32px] text-ink-muted">{unit}</span>
+                  <span className="text-[28px] text-ink-muted">{unit}</span>
                 </span>
               </Ring>
-              <span className="text-[14px] leading-5 text-ink-faint">{q.cue}</span>
+              <span className="text-[14px] leading-5 text-ink-muted">{q.cue}</span>
             </div>
           ) : (
             <>
+              {/* The sets as short bars: done, the one you are on, to come. */}
+              <div className="mt-2.5 flex items-center justify-center gap-3">
+                <span className="text-[13px] text-ink-muted">
+                  Set {Math.min(done + 1, q.sets)} of {q.sets}
+                </span>
+                <span aria-hidden className="flex gap-1">
+                  {Array.from({ length: q.sets }, (_, i) => (
+                    <span key={i} className={`h-1 w-5 rounded-full ${i < done ? 'bg-ink' : i === done ? 'bg-gradient-to-r from-accent to-accent-iris' : 'bg-white/[0.12]'}`} />
+                  ))}
+                </span>
+              </div>
+
               {(tipDo || tipNot) && (
-                <div className="mt-3 flex flex-col gap-1.5 px-1 text-[13px] leading-[18px] text-ink-soft">
+                <Glass className="mt-4 flex flex-col gap-2 rounded-[20px] px-4 py-3 text-[14px] leading-5">
                   {tipDo && (
-                    <span className="flex items-start gap-2.5">
-                      <Check size={14} strokeWidth={2.25} aria-hidden className="mt-0.5 shrink-0 text-accent-iris" />
+                    <span className="flex items-start gap-3 text-ink-soft">
+                      <Check size={15} strokeWidth={2.25} aria-hidden className="mt-[3px] shrink-0 text-accent-iris" />
                       {tipDo}
                     </span>
                   )}
                   {tipNot && (
-                    <span className="flex items-start gap-2.5 text-ink-muted">
-                      <X size={14} strokeWidth={2.25} aria-hidden className="mt-0.5 shrink-0" />
+                    <span className="flex items-start gap-3 text-ink-muted">
+                      <X size={15} strokeWidth={2.25} aria-hidden className="mt-[3px] shrink-0 text-ink-faint" />
                       {tipNot}
                     </span>
                   )}
-                </div>
+                </Glass>
               )}
-              <div className={`${moves ? 'mt-4' : 'mt-6'} flex items-center justify-between`}>
-                <button type="button" aria-label="One less" onClick={() => setReps((r) => Math.max(0, r - (q.unit === 'sec' ? 5 : 1)))} className="glass press h-[52px] w-[52px] shrink-0 rounded-full text-[24px]">
+
+              <Glass className="mt-3 flex items-center justify-between rounded-[28px] p-2.5">
+                <button type="button" aria-label="One less" onClick={() => setReps((r) => Math.max(0, r - (q.unit === 'sec' ? 5 : 1)))} className="press h-14 w-14 shrink-0 rounded-full bg-white/[0.07] text-[24px] text-ink-soft">
                   −
                 </button>
-                <Ring size={moves ? 176 : 232} of={q.sets} done={done} label={`Set ${done + 1} of ${q.sets}`}>
-                  <span key={reps} className={`pop num font-display font-normal ${moves ? 'text-[76px] leading-[78px] tracking-[-3px]' : 'text-[104px] leading-[104px] tracking-[-4px]'} ${ahead ? 'best-num' : ''}`}>
+                <span role="img" aria-label={`${reps}${unit ? ' seconds' : ' reps'}`} className="flex flex-col items-center">
+                  <span key={reps} className={`pop num font-display text-[56px] font-normal leading-[56px] tracking-[-2px] ${ahead ? 'best-num' : ''}`}>
                     {reps}
-                    {unit && <span className="text-[40px] tracking-normal text-ink-muted">{unit}</span>}
+                    {unit && <span className="text-[26px] tracking-normal text-ink-muted">{unit}</span>}
                   </span>
-                  <span className={`text-[13px] ${ahead ? 'text-win-soft' : 'text-ink-faint'}`}>{ahead ? `last ${last}${unit} · +${reps - (last ?? 0)}` : last !== null ? `last ${last}${unit}` : `target ${q.reps}${unit}`}</span>
-                </Ring>
-                <button type="button" aria-label="One more" onClick={() => setReps((r) => r + (q.unit === 'sec' ? 5 : 1))} className="glass press h-[52px] w-[52px] shrink-0 rounded-full text-[24px]">
+                  <span className={`mt-0.5 text-[13px] ${ahead ? 'text-win-soft' : 'text-ink-faint'}`}>{ahead ? `last ${last}${unit} · +${reps - (last ?? 0)}` : last !== null ? `last ${last}${unit}` : `target ${q.reps}${unit}`}</span>
+                </span>
+                <button type="button" aria-label="One more" onClick={() => setReps((r) => r + (q.unit === 'sec' ? 5 : 1))} className="press h-14 w-14 shrink-0 rounded-full bg-white/[0.07] text-[24px] text-ink-soft">
                   +
                 </button>
-              </div>
-              <span className="mt-3 text-center text-[13px] text-ink-faint">
-                Set {Math.min(done + 1, q.sets)} of {q.sets}
-              </span>
-              <div className={moves ? 'mt-5' : 'mt-8'}>
+              </Glass>
+              <div className="mt-3">
                 <Segmented label="How it felt" options={FEEL} value={feel} onChange={setFeel} />
               </div>
             </>

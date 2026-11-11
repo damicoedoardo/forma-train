@@ -12,7 +12,7 @@ const REP = 3.6;
     of the move standing faint behind. Still under reduced motion and for holds. With no
     animation for the move, a quiet tile. `small` (list rows) leaves out the blurs to spare
     the phone. */
-export function BodyDemo({ move, name, view = 'side', small = false, className = '' }: { move: string; name: string; view?: 'side' | 'front'; small?: boolean; className?: string }) {
+export function BodyDemo({ move, name, view = 'side', small = false, bare = false, className = '' }: { move: string; name: string; view?: 'side' | 'front'; small?: boolean; /** No tile behind it: the body stands on the screen's own light. */ bare?: boolean; className?: string }) {
   const body = anatomyFor(move, name);
   const uid = useId().replace(/[^a-zA-Z0-9]/g, '');
   const [t, setT] = useState(0);
@@ -54,7 +54,7 @@ export function BodyDemo({ move, name, view = 'side', small = false, className =
   );
   const of = (kind: Shape['kind']) => s.shapes.filter((p) => p.kind === kind);
   return (
-    <svg viewBox={s.viewBox} role="img" aria-label={`${name}, how it moves`} className={`shrink-0 ${className}`} style={{ background: INK.ground }}>
+    <svg viewBox={s.viewBox} role="img" aria-label={`${name}, how it moves`} className={`shrink-0 ${className}`} style={bare ? undefined : { background: INK.ground }}>
       <defs>
         <linearGradient id={`${uid}-skin`} gradientUnits="userSpaceOnUse" x1={x} y1={y} x2={x + w * 0.25} y2={y + h}>
           <stop offset="0" stopColor="#DDDFE7" />
@@ -84,7 +84,7 @@ export function BodyDemo({ move, name, view = 'side', small = false, className =
           </>
         )}
       </defs>
-      <rect x={x} y={y} width={w} height={h} fill={`url(#${uid}-spot)`} />
+      {!bare && <rect x={x} y={y} width={w} height={h} fill={`url(#${uid}-spot)`} />}
       <g filter={small ? undefined : `url(#${uid}-soft)`} opacity={small ? 0.5 : undefined}>
         {of('shadow').map(path)}
       </g>
