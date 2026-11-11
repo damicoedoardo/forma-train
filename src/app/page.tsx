@@ -126,10 +126,8 @@ export default function Home() {
         <Today
           state={state}
           now={now}
-          photo={social.me?.photo}
           onStart={() => update((s) => startWorkout(s, new Date()))}
           onRest={() => update((s) => ({ ...s, rested: [...new Set([...(s.rested ?? []), dayKey(new Date())])] }))}
-          onYou={toYou}
           onCoach={() => setTab('coach')}
         />
       )}

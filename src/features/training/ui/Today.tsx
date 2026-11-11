@@ -1,8 +1,8 @@
 'use client';
 
 import { useCallback, useState } from 'react';
-import { ChevronRight } from 'lucide-react';
-import { Avatar, Button, Glass, Mark, Ring } from '@/ui';
+import { ChevronRight, Dumbbell } from 'lucide-react';
+import { Button, Glass, Mark, Ring } from '@/ui';
 import { currentPlan, isRestToday, restKept, todayIs, weekRing, weekSlots, weekdayOf } from '@/features/coach/week';
 import { freshNudge, coachNudge } from '@/features/coach/nudge';
 import { minutesOf } from '@/features/coach/validate';
@@ -18,7 +18,7 @@ import { BodyDemo } from './BodyDemo';
 
 const DATE = new Intl.DateTimeFormat('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
 
-export function Today({ state, now, photo, onStart, onRest, onYou, onCoach }: { state: TrainingState; now: Date; photo?: string | null; onStart: () => void; onRest: () => void; onYou: () => void; onCoach: () => void }) {
+export function Today({ state, now, onStart, onRest, onCoach }: { state: TrainingState; now: Date; onStart: () => void; onRest: () => void; onCoach: () => void }) {
   const plan = currentPlan(state.coach);
   const workout = todaysWorkout(state);
   const moves = workout.filter((q) => !isTap(q));
@@ -38,9 +38,10 @@ export function Today({ state, now, photo, onStart, onRest, onYou, onCoach }: { 
     <>
       <div className="flex items-center justify-between">
         <Mark />
-        <button type="button" onClick={onYou} aria-label="You" className="rounded-full">
-          <Avatar name={state.profile.name ?? ''} src={photo} size={40} />
-        </button>
+        <span className="glass flex h-10 items-center gap-2 rounded-pill pl-3 pr-3.5" aria-label={`${state.sessions.length} workouts done`}>
+          <Dumbbell size={16} strokeWidth={2} className="text-accent-soft" aria-hidden />
+          <span className="num font-display text-[15px] font-medium">{state.sessions.length}</span>
+        </span>
       </div>
 
       <div className="hero mt-7 rounded-[28px] px-5 pb-5 pt-5">

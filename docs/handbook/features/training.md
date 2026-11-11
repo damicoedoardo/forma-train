@@ -26,7 +26,7 @@ timestamp: 2026-11-11
   are one tap), `lastTime`, `beatsBest` (a set over last time's best and over every set today),
   `setCount`, and the short texts (`clockText`, `doseText`). `FEEL`
   names how a set felt: Easy, Right, Hard (reps in reserve 4+, 2-3, 0-1).
-- **`ui/Today.tsx`**: the Forma mark, then the hero card (the date, the workout's title, the week
+- **`ui/Today.tsx`**: the Forma mark and a small badge with the workouts done, then the hero card (the date, the workout's title, the week
   as a ring, workouts done of planned, `weekRing`, and as seven dots), the workout's list
   (warm-up and cool-down as one line each; each move plays our own animation of it,
   `BodyDemo`, and opens its page on a tap), the coach's line, and Start / Continue / Mark rested.
