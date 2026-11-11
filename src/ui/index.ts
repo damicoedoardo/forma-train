@@ -13,3 +13,4 @@ export { Screen, Label, Chip } from './Screen';
 export { Ring } from './Ring';
 export { Weave } from './Weave';
 export { Silk } from './Silk';
+export { Intro } from './Intro';

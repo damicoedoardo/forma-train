@@ -48,6 +48,9 @@ with tight tracking.
   most; everything else stays glass.
 - `Mark`: the weave (five parts of a ring, each tucked under the next, one in iris) and the
   name "Forma", top left on Today.
+- `Intro` (mounted in `app/layout.tsx`): the opening screen, once a launch. The weave draws in
+  part by part in a soft iris light, the name rises in, a fine line, then it lifts away (about 3 s).
+  A tap skips it; reduced motion makes it a short fade. Its motion lives in `globals.css` (`.intro-*`).
 - `Silk`: a ribbon of fine lines of light, blue to iris, drifting and twisting slowly on a
   canvas behind the hero. `calm` slows it. Stops when the tab is hidden; still under reduced motion.
 - `Weave`: the logo as a clock (the rest screen): its five parts draw in one after another as

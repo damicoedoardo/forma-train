@@ -30,7 +30,7 @@ timestamp: 2026-11-11
   as a ring (workouts done of planned, `weekRing`), a ribbon of light drifting through the card
   (`Silk`, slower on a rest or done day), and the week as seven dots. Then the coach's line, the
   workout's list (warm-up and cool-down as one line each; each move plays its animation; a tap
-  opens its page), and Start / Continue / Mark rested.
+  opens its page), and Start / Continue / Mark rested, right after the list (not pinned).
 - **`ui/BodyDemo.tsx`**: plays an exercise's anatomy animation (`features/exercises/anatomy`)
   in the rich look at about 30 fps: it defines the gradients and blurs under its own ids and
   layers the shadow, the ghost, the body and the glow. `small` (Today's rows) leaves out the
