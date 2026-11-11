@@ -5,7 +5,7 @@ import { initialState, type TrainingState } from '@/features/training/session';
 import { applySetup, type SetupAnswers } from './setup';
 import { searchExercises } from './search';
 import { runTool, type ToolContext } from './tools';
-import { CHAT_KEEP, coachTurn, MAX_ROUNDS, OPENER, shownChat, STEP_LABEL, trimChat, type Answer, type Ask } from './chat';
+import { CHAT_KEEP, coachTurn, MAX_ROUNDS, OPENER, shownChat, STEP_LABEL, STUCK, trimChat, TURNS_KEEP, type Answer, type Ask } from './chat';
 import type { ChatMessage, ToolCall } from './types';
 import { currentPlan } from './week';
 
@@ -278,12 +278,28 @@ describe('coachTurn', () => {
     expect(s.now().coach!.replies).toEqual([]);
   });
 
-  it('a model that always calls tools stops after MAX_ROUNDS', async () => {
+  it('replies offered with no words: the coach is asked again, to say something', async () => {
+    const s = save(withSetup());
+    const { ask, sent } = fake([say('', [call('c1', 'suggest_replies', { replies: ['Ok'] })]), say('Your week is set.')]);
+    await coachTurn({ text: 'plan me', get: s.get, set: s.set, ask, ctx });
+    expect(sent).toHaveLength(2);
+    expect(shownChat(s.now().coach!.chat).at(-1)).toMatchObject({ who: 'coach', text: 'Your week is set.' });
+  });
+
+  it('a model that always calls tools stops after MAX_ROUNDS, the last asked for words only', async () => {
     const s = save(withSetup());
     let n = 0;
-    const ask: Ask = async () => say('', [call(`c${++n}`, 'find_exercises', { query: 'squat' })]);
+    const finals: boolean[] = [];
+    const ask: Ask = async (_b, _m, opts) => {
+      finals.push(!!opts?.final);
+      return say('', [call(`c${++n}`, 'find_exercises', { query: 'squat' })]);
+    };
     await coachTurn({ text: 'go', get: s.get, set: s.set, ask, ctx });
     expect(n).toBe(MAX_ROUNDS);
+    expect(finals.filter(Boolean)).toHaveLength(1);
+    expect(finals.at(-1)).toBe(true);
+    // It never ends in silence.
+    expect(s.now().coach!.chat!.at(-1)).toEqual({ role: 'assistant', content: STUCK });
   });
 
   // Past CHAT_KEEP messages in one turn, the chat still starts at what the player said.
@@ -308,7 +324,7 @@ describe('coachTurn', () => {
     expect(sent[0]).toEqual([{ role: 'user', content: OPENER }]);
     const chat = s.now().coach!.chat!;
     expect(chat[0]).toEqual({ role: 'user', content: OPENER });
-    expect(shownChat(chat)).toEqual([{ who: 'coach', text: 'Welcome back.', key: 'a1' }]);
+    expect(shownChat(chat)).toEqual([{ who: 'coach', text: 'Welcome back.', key: 'a:Welcome back.' }]);
   });
 
   it('shownChat shows a workout card for set_workout, and hides tool results', () => {
@@ -319,11 +335,24 @@ describe('coachTurn', () => {
       { role: 'assistant', content: ' Here it is. ' },
     ];
     expect(shownChat(chat)).toEqual([
-      { who: 'you', text: 'plan me', key: 'u0' },
-      { who: 'workout', key: 'w1' },
-      { who: 'coach', text: 'Here it is.', key: 'a3' },
+      { who: 'you', text: 'plan me', key: 'u:plan me' },
+      { who: 'workout', key: 'w:c1' },
+      { who: 'coach', text: 'Here it is.', key: 'a:Here it is.' },
     ]);
     expect(shownChat(undefined)).toEqual([]);
+  });
+
+  it('shownChat keys stay put when old lines are trimmed off the top', () => {
+    const turn = (q: string): ChatMessage[] => [
+      { role: 'user', content: q },
+      { role: 'assistant', content: 'Ok.' },
+    ];
+    const chat = [...turn('a'), ...turn('b'), ...turn('c')];
+    const all = shownChat(chat);
+    const later = shownChat(chat.slice(2));
+    // Same line, same key, before and after the first exchange is gone.
+    expect(later.find((l) => 'text' in l && l.text === 'c')!.key).toBe(all.find((l) => 'text' in l && l.text === 'c')!.key);
+    expect(new Set(all.map((l) => l.key)).size).toBe(all.length);
   });
 });
 
@@ -344,5 +373,23 @@ describe('trimChat', () => {
     expect(trimChat(pair(1))).toEqual(pair(1));
     // A chat with no player words left is dropped.
     expect(trimChat([{ role: 'assistant', content: 'hi' }])).toEqual([]);
+  });
+
+  it('keeps the last TURNS_KEEP exchanges whole, however many tool calls each took', () => {
+    const long = (k: number): ChatMessage[] => [...pair(k), ...pair(k).slice(1), ...pair(k).slice(1), { role: 'assistant', content: `a${k}` }];
+    const chat = Array.from({ length: TURNS_KEEP + 3 }, (_, k) => long(k)).flat();
+    const out = trimChat(chat);
+    expect(out.filter((m) => m.role === 'user')).toHaveLength(TURNS_KEEP);
+    expect(out).toEqual(Array.from({ length: TURNS_KEEP }, (_, k) => long(k + 3)).flat());
+  });
+
+  it('past CHAT_KEEP, whole old exchanges go first, never the last one', () => {
+    const big = (k: number): ChatMessage[] => [...pair(k), ...Array.from({ length: 30 }, () => pair(k).slice(1)).flat()];
+    const out = trimChat([...big(1), ...big(2), ...big(3)]);
+    expect(out.length).toBeLessThanOrEqual(CHAT_KEEP);
+    expect(out[0]).toEqual({ role: 'user', content: 'q3' });
+    // One exchange bigger than CHAT_KEEP is still kept whole.
+    const huge = [...pair(9), ...Array.from({ length: 60 }, () => pair(9).slice(1)).flat()];
+    expect(trimChat(huge)).toEqual(huge);
   });
 });

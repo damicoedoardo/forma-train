@@ -7,10 +7,16 @@ import type { ChatMessage, CoachState, ToolCall } from './types';
    one turn of the talk (ask the model, run the tools it calls here, ask again with their results,
    until it has answered), and what the screen shows of it. */
 
-/** Messages kept: about the last ten exchanges. Older ones are in the coach's notes and the log. */
-export const CHAT_KEEP = 40;
-/** Model calls in one turn: enough to search, build and fix a workout, never a loop. */
-export const MAX_ROUNDS = 6;
+/** Exchanges kept: the last ten things the player said, each with all the coach did for it.
+    Older ones are in the coach's notes and the log. */
+export const TURNS_KEEP = 10;
+/** Messages kept at most (the api takes 120): whole old exchanges go first when past it. */
+export const CHAT_KEEP = 100;
+/** Model calls in one turn: enough to search, build and fix a workout, never a loop. The last one
+    may not call tools, so every turn ends in words. */
+export const MAX_ROUNDS = 8;
+/** Said when the coach still found no words (the model kept calling tools). */
+export const STUCK = 'I got tangled up there. Could you say that another way?';
 /** What the chat starts with when the coach speaks first; never shown. */
 export const OPENER = '(The player opened the coach chat.)';
 
@@ -25,17 +31,18 @@ export interface Answer {
   finish_reason: string;
 }
 
-/** Ask the model: the brief and the chat in, its next message out. */
-export type Ask = (brief: string, messages: ChatMessage[]) => Promise<Answer>;
+/** Ask the model: the brief and the chat in, its next message out. `final`: no tools this time,
+    only words. */
+export type Ask = (brief: string, messages: ChatMessage[], opts?: { final?: boolean }) => Promise<Answer>;
 
-/** The recent part of the chat, starting at something the player said. */
+/** The recent part of the chat: whole exchanges, each starting at something the player said, so
+    what stays never shifts or loses its start. The last exchange is always kept whole. */
 export function trimChat(chat: ChatMessage[]): ChatMessage[] {
-  const out = chat.slice(-CHAT_KEEP);
-  const first = out.findIndex((m) => m.role === 'user');
-  if (first !== -1) return out.slice(first);
-  // One long turn of tool calls: keep it whole from what the player said, so it is never lost.
-  const last = chat.findLastIndex((m) => m.role === 'user');
-  return last === -1 ? [] : chat.slice(last);
+  const starts = chat.flatMap((m, i) => (m.role === 'user' ? [i] : []));
+  if (!starts.length) return [];
+  let k = Math.max(0, starts.length - TURNS_KEEP);
+  while (k < starts.length - 1 && chat.length - starts[k] > CHAT_KEEP) k++;
+  return chat.slice(starts[k]);
 }
 
 const withChat = (s: TrainingState, chat: ChatMessage[], patch: Partial<CoachState> = {}): TrainingState => ({
@@ -65,12 +72,16 @@ export async function coachTurn(opts: { text?: string; get: () => TrainingState;
   const { get, set, ask } = opts;
   const text = opts.text?.trim();
   if (text) set((s) => withChat(s, [...(s.coach?.chat ?? []), { role: 'user', content: text.slice(0, 1000) }], { replies: [] }));
+  // Whether the coach said anything this turn: it never ends a turn in silence.
+  let spoke = false;
   for (let round = 0; round < MAX_ROUNDS; round++) {
     const state = get();
     const chat = state.coach?.chat ?? [];
     // The model only answers a player: an empty chat opens with a hello it never sees as typed.
     const messages: ChatMessage[] = chat.length ? chat : [{ role: 'user', content: OPENER }];
-    const { message } = await ask(coachBrief(state, new Date(), opts.checkin), messages);
+    const final = round === MAX_ROUNDS - 1;
+    const { message } = await ask(coachBrief(state, new Date(), opts.checkin), messages, final ? { final } : undefined);
+    spoke ||= !!message.content.trim();
     const calls = message.tool_calls ?? [];
     // Tools run on the latest save, and only change the coach's part of it.
     let after = get();
@@ -86,8 +97,10 @@ export async function coachTurn(opts: { text?: string; get: () => TrainingState;
     }
     const coach = after.coach;
     set((s) => withChat({ ...s, coach: coach ?? s.coach }, [...messages, message, ...results]));
-    if (!calls.length || waits) return;
+    // Offering replies ends the turn once something was said; replies alone get asked again.
+    if (!calls.length || (waits && spoke)) break;
   }
+  if (!spoke) set((s) => withChat(s, [...(s.coach?.chat ?? []), { role: 'assistant', content: STUCK }]));
 }
 
 /** A line of the chat as the screen shows it. */
@@ -95,14 +108,24 @@ export type Shown = { who: 'coach' | 'you'; text: string; key: string } | { who:
 
 const SHOWN_TOOLS = new Set(['set_workout', 'set_week', 'move_workout', 'rest_day']);
 
+/** Keys come from what a line says, not where it sits, so a line keeps its place on the screen
+    when old exchanges are trimmed off the top (no blink, no line played in again). */
 export function shownChat(chat: ChatMessage[] | undefined): Shown[] {
   const out: Shown[] = [];
-  (chat ?? []).forEach((m, i) => {
-    if (m.role === 'user' && !hidden(m.content)) out.push({ who: 'you', text: m.content, key: `u${i}` });
+  const seen = new Map<string, number>();
+  const key = (k: string) => {
+    const n = seen.get(k) ?? 0;
+    seen.set(k, n + 1);
+    return n ? `${k}#${n}` : k;
+  };
+  for (const m of chat ?? []) {
+    if (m.role === 'user' && !hidden(m.content)) out.push({ who: 'you', text: m.content, key: key(`u:${m.content}`) });
     else if (m.role === 'assistant') {
-      if (m.content.trim()) out.push({ who: 'coach', text: m.content.trim(), key: `a${i}` });
-      if ((m.tool_calls ?? []).some((c: ToolCall) => SHOWN_TOOLS.has(c.function.name))) out.push({ who: 'workout', key: `w${i}` });
+      const text = m.content.trim();
+      if (text) out.push({ who: 'coach', text, key: key(`a:${text}`) });
+      const shown = (m.tool_calls ?? []).find((c: ToolCall) => SHOWN_TOOLS.has(c.function.name));
+      if (shown) out.push({ who: 'workout', key: key(`w:${shown.id}`) });
     }
-  });
+  }
   return out;
 }

@@ -9,10 +9,10 @@ import type { ChatMessage } from './types';
 
 export class CoachError extends Error {}
 
-export async function askCoach(brief: string, messages: ChatMessage[]): Promise<Answer> {
+export async function askCoach(brief: string, messages: ChatMessage[], opts?: { final?: boolean }): Promise<Answer> {
   let r: Response;
   try {
-    r = await api('POST', '/coach', { brief, messages });
+    r = await api('POST', '/coach', { brief, messages, ...(opts?.final ? { final: true } : {}) });
   } catch (e) {
     throw new CoachError(e instanceof Offline ? "I can't reach you right now. Are you online?" : 'Sign in first, on the You tab, and we can talk.');
   }

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Check, ChevronLeft, Play, X } from 'lucide-react';
-import { Glass, Label, Screen } from '@/ui';
+import { Glass, Label, Layer, Screen } from '@/ui';
 import { loadLibrary } from '@/features/exercises/library';
 import { guideFor, type Guide } from '@/features/exercises/guide';
 import { INK, MUSCLE_NAME, WORKS, anatomyFor } from '@/features/exercises/anatomy/body';
@@ -38,6 +38,7 @@ export function ExercisePage({ q, onClose }: { q: WorkoutExercise; onClose: () =
   const close = () => window.history.back();
 
   return (
+    <Layer>
     <div className="sheet fixed inset-0 z-40 overflow-y-auto bg-base" role="dialog" aria-label={q.name}>
       <Screen tabs={false} glow="-right-40 -top-40">
         <button type="button" aria-label="Back" onClick={close} className="glass press flex h-11 w-11 items-center justify-center rounded-full">
@@ -89,6 +90,7 @@ export function ExercisePage({ q, onClose }: { q: WorkoutExercise; onClose: () =
         {guide && guide.donts.length > 0 && <Cues label="Avoid" items={guide.donts} />}
       </Screen>
     </div>
+    </Layer>
   );
 }
 

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { Flame, MessageCircle, Plus, Share2, UserPlus } from 'lucide-react';
-import { Avatar, Button, Chip, Glass, Segmented } from '@/ui';
+import { Avatar, Button, Chip, Glass, Layer, Segmented } from '@/ui';
 import { cloudConfigured } from '@/platform/api';
 import { CHEER_LIMIT, cleanCheer, quickCheers } from '../cheers';
 import { cleanLine, FEED_LIMIT, type Post } from '../feed';
@@ -164,11 +164,13 @@ function Friends({ code }: { code: string | null }) {
 /** A sheet from the bottom, over a dim backdrop. */
 function Sheet({ children, onClose }: { children: React.ReactNode; onClose: () => void }) {
   return (
-    <div className="fade fixed inset-0 z-30 flex items-end bg-black/55 px-4" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 20px)' }} onClick={onClose}>
-      <div className="glass sheet mx-auto flex w-full max-w-[448px] flex-col gap-4 rounded-card !bg-[#16171C]/95 p-5" onClick={(e) => e.stopPropagation()}>
-        {children}
+    <Layer>
+      <div className="fade fixed inset-0 z-30 flex items-end bg-black/55 px-4" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 20px)' }} onClick={onClose}>
+        <div className="glass sheet mx-auto flex w-full max-w-[448px] flex-col gap-4 rounded-card !bg-[#16171C]/95 p-5" onClick={(e) => e.stopPropagation()}>
+          {children}
+        </div>
       </div>
-    </div>
+    </Layer>
   );
 }
 

@@ -33,6 +33,9 @@ with tight tracking.
 
 ## Surfaces and parts (`src/ui/`, `.glass` in `globals.css`)
 
+- `Layer`: puts a sheet or a full page straight in `<body>` (a portal), so `fixed inset-0` is the
+  screen even inside a rising list (a transformed parent would pin it to the list instead). Every
+  sheet and full page uses it.
 - `Glass`: the one surface, lit from above: white from 6% down to 3.5%, a 6.5% hairline, a thin
   line of light on the top edge, and a 20px blur. Depth comes from
   layering glass over the base and the glow, not from shadows.

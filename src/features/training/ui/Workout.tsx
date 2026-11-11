@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Check, CirclePlay, Undo2, X } from 'lucide-react';
-import { Avatar, Button, Glass, Ring, Screen, Segmented, Weave } from '@/ui';
+import { Avatar, Button, Glass, Layer, Ring, Screen, Segmented, Weave } from '@/ui';
 import { useNow } from '@/platform/useNow';
 import { useWakeLock } from '@/platform/useWakeLock';
 import { armChime, chime } from '@/platform/chime';
@@ -255,6 +255,7 @@ export function Workout({ state, update, onFinish, onLeave, onDrop, cheer, onChe
       {page && <ExercisePage q={page} onClose={closePage} />}
 
       {menu && (
+        <Layer>
         <div className="fade fixed inset-0 z-30 flex items-end bg-black/55 px-4 pb-8" onClick={() => setMenu(false)}>
           <Glass className="sheet mx-auto flex w-full max-w-[448px] flex-col gap-2 p-3 !bg-[#16171C]/95" onClick={(e: React.MouseEvent) => e.stopPropagation()}>
             {count.done > 0 && (
@@ -270,6 +271,7 @@ export function Workout({ state, update, onFinish, onLeave, onDrop, cheer, onChe
             </Button>
           </Glass>
         </div>
+        </Layer>
       )}
     </Screen>
   );

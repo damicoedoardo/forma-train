@@ -14,3 +14,4 @@ export { Ring } from './Ring';
 export { Weave } from './Weave';
 export { Silk } from './Silk';
 export { Intro } from './Intro';
+export { Layer } from './Layer';

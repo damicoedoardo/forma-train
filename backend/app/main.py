@@ -11,6 +11,7 @@ from app.routes import cheers, coach, feed, friends, save
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await init_pool(settings.database_url)
+    await save.get_store().ensure()
     await friends.get_friend_store().ensure()
     await cheers.get_cheer_store().ensure()
     await feed.get_feed_store().ensure()

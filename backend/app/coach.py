@@ -384,8 +384,11 @@ MAX_TOKENS = 2000
 
 
 class Model(Protocol):
-    async def ask(self, brief: str, messages: list[dict[str, Any]], user: str) -> dict[str, Any]:
-        """One model turn: {message: {role, content, tool_calls?}, finish_reason}."""
+    async def ask(
+        self, brief: str, messages: list[dict[str, Any]], user: str, final: bool = False
+    ) -> dict[str, Any]:
+        """One model turn: {message: {role, content, tool_calls?}, finish_reason}. `final`: the
+        turn's last call, so no tools, only words."""
         ...
 
 
@@ -394,8 +397,10 @@ class LiteLLMModel:
     OpenRouter. The proxy maps `coach_model` (an alias) to the real model, so switching models is
     a change to litellm-config.yaml, not a deploy. Keys live only in the server's .env."""
 
-    async def ask(self, brief: str, messages: list[dict[str, Any]], user: str) -> dict[str, Any]:
-        payload = {
+    async def ask(
+        self, brief: str, messages: list[dict[str, Any]], user: str, final: bool = False
+    ) -> dict[str, Any]:
+        payload: dict[str, Any] = {
             "model": settings.coach_model,
             # Fixed rules first and the brief after, so the fixed part is a cacheable prefix.
             "messages": [
@@ -407,6 +412,9 @@ class LiteLLMModel:
             "max_tokens": MAX_TOKENS,
             "user": user,
         }
+        if final:
+            # The tools stay listed (the chat holds their calls), but this answer must be words.
+            payload["tool_choice"] = "none"
         timeout = httpx.Timeout(connect=10.0, read=90.0, write=10.0, pool=10.0)
         async with httpx.AsyncClient(base_url=settings.litellm_url, timeout=timeout) as c:
             r = await c.post(
