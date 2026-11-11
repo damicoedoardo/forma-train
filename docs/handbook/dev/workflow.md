@@ -20,7 +20,11 @@ timestamp: 2026-11-11
 - Work on a branch, open a PR into `main`. CI runs typecheck, tests and the build (`.github/workflows/app.yml`), the backend lint and tests when `backend/` changes (`.github/workflows/backend.yml`), and the handbook guard (`.github/workflows/handbook.yml`). CI runs on every PR, stacked ones too.
 - Deploys: the app goes on Vercel (project `forma-train`) from `main`. `vercel.json` names one
   service, the Next.js app, so Vercel does not try to run `backend/` too; the FastAPI backend
-  goes on our server.
+  runs on our server (see [the API](../backend/api.md)). Production is `https://formaquest.app`
+  (also `forma-train-one.vercel.app`). Vercel settings: `NEXT_PUBLIC_API_URL`,
+  `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `NEXT_PUBLIC_POSTHOG_KEY` and
+  `DEEPGRAM_API_KEY`. `NEXT_PUBLIC_` values are baked in at build time, so a change needs a
+  new deploy.
 - App updates: an installed app checks for a new deploy each time it is brought back
   (`src/platform/pwa/ServiceWorker.tsx`) and reloads into it, right away if untouched, else once
   hidden. The build name (`NEXT_PUBLIC_BUILD_ID` in `next.config.ts`) is a hash of the app's own
