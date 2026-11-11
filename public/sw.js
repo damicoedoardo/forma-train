@@ -1,7 +1,8 @@
 // Forma service worker: the app keeps working in a gym with no signal.
 // Pages are network-first (fresh deploys win), static assets cache-first.
-const CACHE = 'forma-train-v2';
-const SHELL = ['/', '/manifest.webmanifest', '/icon-192.png', '/icon-512.png'];
+// A new name drops the old cache, and with it the old icon.
+const CACHE = 'forma-train-v3';
+const SHELL = ['/', '/manifest.webmanifest', '/weave-192.png', '/weave-512.png'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));
