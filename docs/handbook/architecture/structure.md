@@ -9,7 +9,8 @@ timestamp: 2026-11-11
 # Code structure
 
 Next.js 16 (App Router), React 18, TypeScript strict, Tailwind 3, Vitest, pnpm. One page holds
-the app (`src/app/page.tsx`); the save lives on the phone, with a cloud backup once signed in.
+the app (`src/app/page.tsx`): in a browser it asks to be installed, installed it opens on the
+sign-in, then the app. The save lives on the phone, with a cloud backup.
 
 ```
 src/app/         Routes: the app (page.tsx), layout, manifest, globals.css, api/voice (dictation)
@@ -20,7 +21,8 @@ src/features/    One folder per feature (training, coach, exercises, social, acc
 src/platform/    Shared plumbing: the store, the api client, random, the ticking clock (useNow), the screen wake lock (useWakeLock), the chime, analytics (PostHog), pwa/ (the service worker and update check, the fix for the iPhone keyboard, and Keyboard: where the keyboard is, for the chat bar)
 backend/         FastAPI on our server: login check, backup, coach relay, social
 scripts/         Node tools: the handbook check
-public/          Service worker and icons (weave-*.png; the manifest is src/app/manifest.ts)
+public/          Service worker, icons (weave-*.png; the manifest is src/app/manifest.ts), email/ (the sign-in email's picture)
+supabase/        templates/: the sign-in email, pasted into Supabase by hand
 docs/handbook/   This handbook
 ```
 

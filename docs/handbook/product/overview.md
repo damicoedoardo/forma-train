@@ -3,7 +3,7 @@ type: conceptual
 title: Product overview
 description: Forma is a calm, premium training app: an AI coach plans your week from how you really train, you log sets fast, and friends cheer you on.
 tags: [product, overview]
-timestamp: 2026-11-10
+timestamp: 2026-11-11
 ---
 
 # Product overview
@@ -13,7 +13,9 @@ what you want; it plans your week, watches how each workout really went (reps, h
 felt, how long it took) and changes the plan with you. Logging a set is two taps. Friends see
 who is training, cheer each other on mid-workout, and share finished workouts.
 
-It is installable to the home screen and works offline at the gym. It is built for Edoardo
+It lives on the phone: opened in a browser, it first asks to be added to the Home Screen, with
+the steps for that phone (a computer can go on in the browser). Installed, it opens on the
+sign-in (an emailed code, or Google), and works offline at the gym once signed in. It is built for Edoardo
 first, then friends.
 
 ## The four tabs

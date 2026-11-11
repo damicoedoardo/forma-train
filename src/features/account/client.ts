@@ -13,6 +13,10 @@ export interface CloudStatus {
   /** The signed-in account's id, to tell your own posts and cards. */
   userId?: string | null;
   signedIn: boolean;
+  /** Supabase has said whether this phone is signed in (until then, `maybeSignedIn()` guesses). */
+  known?: boolean;
+  /** The cloud save has been met once since signing in (taken, sent, or it failed). */
+  met?: boolean;
   phase: 'idle' | 'saving' | 'saved' | 'offline' | 'error';
   savedAt?: string;
   workouts?: number;

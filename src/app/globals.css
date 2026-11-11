@@ -134,3 +134,8 @@ html[data-keyboard] .kb-fit { height: var(--vvh); top: var(--vvtop); padding-bot
 /* Dictation: the line that says the words are being written down breathes softly. */
 @keyframes writing { 0%, 100% { opacity: 0.45; } 50% { opacity: 1; } }
 .writing { animation: writing 1.4s ease-in-out infinite; }
+
+/* The sign-in (`Welcome`): the mark rises from the middle and the sign-in comes in under it.
+   Transitions, not animations, so they don't play again when the iPhone keyboard fix redraws. */
+.welcome-mark { transition: transform 900ms cubic-bezier(0.2, 0.7, 0.2, 1); }
+.welcome-form { transition: opacity 700ms ease-out 250ms, transform 800ms cubic-bezier(0.2, 0.7, 0.2, 1) 250ms; }

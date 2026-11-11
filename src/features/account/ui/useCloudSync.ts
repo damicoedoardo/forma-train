@@ -85,13 +85,14 @@ export function useCloudSync(state: TrainingState, update: (fn: (s: TrainingStat
         const id = session?.user.id ?? null;
         const was = user.current;
         user.current = id;
-        setCloudStatus({ signedIn: !!id, email: session?.user.email ?? null, userId: id });
+        setCloudStatus({ signedIn: !!id, known: true, email: session?.user.email ?? null, userId: id });
         if (id !== was) identify(id);
         if (id && id !== was) {
           synced.current = null;
-          void run(() => meet.current());
+          setCloudStatus({ met: false });
+          void run(() => meet.current()).finally(() => setCloudStatus({ met: true }));
         }
-        if (!id) setCloudStatus({ phase: 'idle', savedAt: undefined });
+        if (!id) setCloudStatus({ phase: 'idle', savedAt: undefined, met: false });
       });
       stop = () => data.subscription.unsubscribe();
     };

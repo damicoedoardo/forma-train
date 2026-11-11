@@ -3,15 +3,15 @@
 import { useRef, useState } from 'react';
 import { Camera } from 'lucide-react';
 import { Avatar, Button, Glass, Label, Layer, Stats } from '@/ui';
-import { cloudConfigured, googleSignIn } from '@/platform/api';
+import { cloudConfigured } from '@/platform/api';
 import { sessionsThisWeek, weekStreak, WEEKLY_GOAL, type TrainingState } from '@/features/training/session';
 import { PROFILE_LIMIT } from '@/features/social/friends';
 import { savePhoto, saveProfile, shrinkPhoto } from '@/features/social/client';
-import { signInWithEmail, signInWithGoogle, signOut, verifyEmailCode } from '../client';
+import { signOut } from '../client';
 import { useCloudStatus } from './useCloudStatus';
 
-/* You: your name and line, how you train, your recent workouts, and the account (sign-in and
-   backup). */
+/* You: your name and line, how you train, your recent workouts, and the account (who is signed
+   in, the backup, sign out). Signing in is the app's front door (Welcome). */
 
 type Update = (fn: (s: TrainingState) => TrainingState) => void;
 const DAY = new Intl.DateTimeFormat('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
@@ -57,22 +57,18 @@ export function YouTab({ state, update, now, photo, me, onPhoto, onRedo }: { sta
         </div>
       )}
 
-      {cloudConfigured && (
+      {cloudConfigured && cloud.signedIn && (
         <div className="mt-7 flex flex-col gap-2.5">
           <Label>Account</Label>
-          {cloud.signedIn ? (
-            <Glass className="flex items-center justify-between px-5 py-4">
-              <div className="flex flex-col">
-                <span className="text-[15px]">{cloud.email}</span>
-                <span className="text-[13px] text-ink-faint">{cloud.phase === 'saving' ? 'Saving…' : cloud.phase === 'offline' ? 'Offline' : cloud.phase === 'error' ? "Couldn't back up" : 'Backed up'}</span>
-              </div>
-              <button type="button" onClick={() => void signOut()} className="text-[14px] text-ink-muted">
-                Sign out
-              </button>
-            </Glass>
-          ) : (
-            <SignIn />
-          )}
+          <Glass className="flex items-center justify-between px-5 py-4">
+            <div className="flex flex-col">
+              <span className="text-[15px]">{cloud.email}</span>
+              <span className="text-[13px] text-ink-faint">{cloud.phase === 'saving' ? 'Saving…' : cloud.phase === 'offline' ? 'Offline' : cloud.phase === 'error' ? "Couldn't back up" : 'Backed up'}</span>
+            </div>
+            <button type="button" onClick={() => void signOut()} className="text-[14px] text-ink-muted">
+              Sign out
+            </button>
+          </Glass>
         </div>
       )}
 
@@ -139,48 +135,5 @@ function EditSheet({ state, update, me, signedIn, onClose }: { state: TrainingSt
       </div>
     </div>
     </Layer>
-  );
-}
-
-function SignIn() {
-  const [email, setEmail] = useState('');
-  const [code, setCode] = useState('');
-  const [sent, setSent] = useState(false);
-  const [msg, setMsg] = useState<string | null>(null);
-  const field = 'min-w-0 flex-1 bg-transparent text-[16px] text-ink outline-none placeholder:text-ink-faint';
-  const go = async () => {
-    setMsg(null);
-    const err = sent ? await verifyEmailCode(email.trim(), code.trim()) : await signInWithEmail(email.trim());
-    if (err) setMsg(err);
-    else if (!sent) setSent(true);
-  };
-  return (
-    <Glass className="flex flex-col gap-3 p-4">
-      <span className="px-1 text-[14px] leading-5 text-ink-muted">Sign in to back up your training, talk with the coach and train with friends.</span>
-      {googleSignIn && !sent && (
-        <Button kind="glass" onClick={() => void signInWithGoogle()}>
-          Continue with Google
-        </Button>
-      )}
-      <form
-        className="flex flex-col gap-3"
-        onSubmit={(e) => {
-          e.preventDefault();
-          void go();
-        }}
-      >
-        <div className="glass flex h-14 items-center rounded-pill px-5">
-          {sent ? (
-            <input autoFocus value={code} onChange={(e) => setCode(e.target.value)} inputMode="numeric" placeholder="Code from the email" aria-label="Code from the email" className={field} />
-          ) : (
-            <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder="Email" aria-label="Email" className={field} />
-          )}
-        </div>
-        <Button type="submit" disabled={sent ? !code.trim() : !email.includes('@')}>
-          {sent ? 'Sign in' : 'Email me a code'}
-        </Button>
-      </form>
-      {msg && <span className="px-1 text-[13px] text-ink-soft">{msg}</span>}
-    </Glass>
   );
 }
