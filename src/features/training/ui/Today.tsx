@@ -1,5 +1,7 @@
 'use client';
 
+import { useCallback, useState } from 'react';
+import { ChevronRight } from 'lucide-react';
 import { Avatar, Button, Glass, Mark, Ring } from '@/ui';
 import { currentPlan, isRestToday, restKept, todayIs, weekRing, weekSlots, weekdayOf } from '@/features/coach/week';
 import { freshNudge, coachNudge } from '@/features/coach/nudge';
@@ -8,8 +10,10 @@ import { shortTitle, titleKind } from '@/features/coach/title';
 import { dayKey } from '../days';
 import { dayType, isTap, todaysWorkout, type TrainingState, type WorkoutExercise } from '../session';
 import { doseText, setCount } from '../workout';
+import { ExercisePage } from './ExercisePage';
 
-/* Today: the date, the workout, the week as a ring and at a glance, the coach's one line, and Start. */
+/* Today: the date, the workout, the week as a ring and at a glance, the coach's one line, and Start. A
+   move in the list opens its page: the video, what to do, what to avoid. */
 
 const DATE = new Intl.DateTimeFormat('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
 
@@ -26,6 +30,8 @@ export function Today({ state, now, photo, onStart, onRest, onYou, onCoach }: { 
   const line = freshNudge(state, now) ?? coachNudge(state, now);
   const ahead = day.kind === 'done' || (rest && !going);
   const ring = weekRing(state.coach?.week, now);
+  const [open, setOpen] = useState<WorkoutExercise | null>(null);
+  const close = useCallback(() => setOpen(null), []);
 
   return (
     <>
@@ -74,12 +80,22 @@ export function Today({ state, now, photo, onStart, onRest, onYou, onCoach }: { 
 
       {!ahead && (
         <Glass className="mt-3 flex flex-col px-5 py-1">
-          {rows(workout).map((r, i) => (
-            <div key={r.key} className={`flex items-center justify-between py-[11px] ${i ? 'border-t hairline' : ''}`}>
-              <span className={`text-[16px] ${r.soft ? 'text-ink-muted' : ''}`}>{r.name}</span>
-              <span className="num text-[15px] text-ink-muted">{r.dose}</span>
-            </div>
-          ))}
+          {rows(workout).map((r, i) =>
+            r.q ? (
+              <button key={r.key} type="button" onClick={() => setOpen(r.q!)} className={`press flex items-center justify-between py-[11px] text-left ${i ? 'border-t hairline' : ''}`}>
+                <span className="text-[16px]">{r.name}</span>
+                <span className="flex items-center gap-1.5">
+                  <span className="num text-[15px] text-ink-muted">{r.dose}</span>
+                  <ChevronRight size={16} strokeWidth={2} className="-mr-1 text-ink-faint" aria-hidden />
+                </span>
+              </button>
+            ) : (
+              <div key={r.key} className={`flex items-center justify-between py-[11px] ${i ? 'border-t hairline' : ''}`}>
+                <span className="text-[16px] text-ink-muted">{r.name}</span>
+                <span className="num text-[15px] text-ink-muted">{r.dose}</span>
+              </div>
+            ),
+          )}
         </Glass>
       )}
 
@@ -106,19 +122,21 @@ export function Today({ state, now, photo, onStart, onRest, onYou, onCoach }: { 
           </Button>
         )}
       </div>
+
+      {open && <ExercisePage q={open} onClose={close} />}
     </>
   );
 }
 
 /** The list on Today: the warm-up and the cool-down as one line each, the moves in between. */
-function rows(workout: WorkoutExercise[]): { key: string; name: string; dose: string; soft?: boolean }[] {
+function rows(workout: WorkoutExercise[]): { key: string; name: string; dose: string; q?: WorkoutExercise }[] {
   const warm = workout.filter((q) => q.role === 'warmup');
   const cool = workout.filter((q) => q.role === 'stretch');
   const mins = (qs: WorkoutExercise[]) => `${Math.max(1, Math.round(qs.reduce((a, q) => a + (q.unit === 'sec' ? q.reps : q.reps * 3), 0) / 60))} min`;
   return [
-    ...(warm.length ? [{ key: 'warm', name: 'Warm-up', dose: mins(warm), soft: true }] : []),
-    ...workout.filter((q) => !isTap(q)).map((q, i) => ({ key: `${q.id}${i}`, name: q.name, dose: doseText(q) })),
-    ...(cool.length ? [{ key: 'cool', name: 'Cool-down', dose: mins(cool), soft: true }] : []),
+    ...(warm.length ? [{ key: 'warm', name: 'Warm-up', dose: mins(warm) }] : []),
+    ...workout.filter((q) => !isTap(q)).map((q, i) => ({ key: `${q.id}${i}`, name: q.name, dose: doseText(q), q })),
+    ...(cool.length ? [{ key: 'cool', name: 'Cool-down', dose: mins(cool) }] : []),
   ];
 }
 

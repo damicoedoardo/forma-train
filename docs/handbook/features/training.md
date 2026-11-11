@@ -3,7 +3,7 @@ type: conceptual
 title: Training
 description: The TrainingState save, how a workout is drafted, logged and finished, rest days, the week streak and the training numbers.
 tags: [training, save, session, workout]
-timestamp: 2026-11-10
+timestamp: 2026-11-11
 ---
 
 # Training
@@ -28,7 +28,10 @@ timestamp: 2026-11-10
   names how a set felt: Easy, Right, Hard (reps in reserve 4+, 2-3, 0-1).
 - **`ui/Today.tsx`**: the Forma mark, then the hero card (the date, the workout's title, the week
   as a ring, workouts done of planned, `weekRing`, and as seven dots), the workout's list
-  (warm-up and cool-down as one line each), the coach's line, and Start / Continue / Mark rested.
+  (warm-up and cool-down as one line each; tap a move to open its page), the coach's line, and Start / Continue / Mark rested.
+- **`ui/ExercisePage.tsx`**: one exercise, opened from Today: the video on top, then Do and
+  Avoid (`guideFor` in `features/exercises/guide.ts`). It covers the screen; the phone's back
+  closes it.
 - **`ui/Workout.tsx`**: one exercise at a time: the counter, how it felt, Log set, then the rest
   clock, which buzzes and chimes when it runs out (not when skipped). A set that beats your best
   shows "New best" over the rest clock. The screen stays on (`useWakeLock`). A friend's cheer
