@@ -1,8 +1,9 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { ArrowUp } from 'lucide-react';
+import { ArrowUp, Check, Mic, X } from 'lucide-react';
 import { Button, Chip, Glass, Segmented } from '@/ui';
+import { CoachOrb } from '@/ui/CoachOrb';
 import { cloudConfigured } from '@/platform/api';
 import { dayKey } from '@/features/training/days';
 import { sessionsThisWeek, WEEKLY_GOAL, type TrainingState } from '@/features/training/session';
@@ -12,8 +13,11 @@ import { minutesOf } from '../validate';
 import { daysIn, restKept, weekSlots, weekTally, weekdayOf } from '../week';
 import { useCoachChat } from './useCoach';
 import { shortTitle } from '../title';
+import { demoAsk } from './demo';
+import { useDictation } from './useDictation';
 
-/* The Coach tab: the week it planned, and the chat. */
+/* The Coach tab: the week it planned, and the chat. With `?demo` in the address the chat runs on a
+   made-up coach (`demo.ts`). */
 
 type View = 'week' | 'chat';
 type Update = (fn: (s: TrainingState) => TrainingState) => void;
@@ -79,9 +83,25 @@ function Week({ state, now }: { state: TrainingState; now: Date }) {
   );
 }
 
-function Chat({ state, update, signedIn, now, onSignIn, onWeek }: { state: TrainingState; update: Update; signedIn: boolean; now: Date; onSignIn: () => void; onWeek: () => void }) {
-  const { send, busy, error, steps } = useCoachChat(state, update);
+function Chat({ state, update, signedIn: real, now, onSignIn, onWeek }: { state: TrainingState; update: Update; signedIn: boolean; now: Date; onSignIn: () => void; onWeek: () => void }) {
+  const [demo] = useState(() => typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('demo'));
+  const signedIn = real || demo;
+  const { send, busy, error, steps } = useCoachChat(state, update, demo ? demoAsk : undefined);
   const [text, setText] = useState('');
+  const input = useRef<HTMLTextAreaElement>(null);
+  // Dictation: the words land after anything already typed, to edit or send.
+  const dictation = useDictation((words) => {
+    setText((t) => (t.trim() ? `${t.trimEnd()} ${words}` : words).slice(0, 1000));
+    input.current?.focus();
+  });
+  const talking = dictation.state !== 'idle';
+  // The box grows with what is in it, up to five lines.
+  useEffect(() => {
+    const el = input.current;
+    if (!el) return;
+    el.style.height = 'auto';
+    el.style.height = `${el.scrollHeight}px`;
+  }, [text, talking]);
   const end = useRef<HTMLDivElement>(null);
   const lines = shownChat(state.coach?.chat);
   const replies = state.coach?.replies ?? [];
@@ -139,7 +159,14 @@ function Chat({ state, update, signedIn, now, onSignIn, onWeek }: { state: Train
             </div>
           ),
         )}
-        {busy && <div className="self-start px-2 text-[13px] text-ink-faint">{steps.at(-1) ?? 'Thinking'}…</div>}
+        {busy && (
+          <div className="flex items-center gap-3 self-start pl-1">
+            <CoachOrb mode="thinking" size={30} label="Working" />
+            <span key={steps.length} className="fade text-[14px] text-ink-muted">
+              {steps.at(-1) ?? 'Thinking'}…
+            </span>
+          </div>
+        )}
         {error && <div className="self-start px-2 text-[13px] text-ink-muted">{error}</div>}
         {!signedIn && (
           <Glass className="flex flex-col gap-4 px-5 py-5">
@@ -165,17 +192,63 @@ function Chat({ state, update, signedIn, now, onSignIn, onWeek }: { state: Train
               ))}
             </div>
           )}
+          {dictation.error && <span className="px-2 text-[13px] text-ink-muted">{dictation.error}</span>}
           <form
-            className="glass flex h-14 items-center gap-2 rounded-pill pl-5 pr-1.5"
+            className="glass flex min-h-14 items-end gap-1 rounded-[28px] py-1.5 pl-5 pr-1.5"
             onSubmit={(e) => {
               e.preventDefault();
-              say(text);
+              if (!talking) say(text);
             }}
           >
-            <input value={text} onChange={(e) => setText(e.target.value)} placeholder="Message" aria-label="Message" maxLength={1000} className="min-w-0 flex-1 bg-transparent text-[16px] text-ink outline-none placeholder:text-ink-faint" />
-            <button type="submit" aria-label="Send" disabled={!text.trim() || busy} className="flex h-11 w-11 items-center justify-center press btn-primary rounded-full text-base disabled:opacity-30">
-              <ArrowUp size={18} strokeWidth={2.2} aria-hidden />
-            </button>
+            {dictation.state === 'recording' ? (
+              <>
+                <button type="button" aria-label="Cancel" onClick={dictation.cancel} className="press -ml-3.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-ink-muted">
+                  <X size={19} strokeWidth={2} aria-hidden />
+                </button>
+                <div aria-hidden className="flex h-8 min-w-0 flex-1 self-center items-center justify-end gap-[3px] overflow-hidden">
+                  {dictation.bars.map((l, i) => (
+                    <span key={i} className="w-[3px] shrink-0 rounded-full bg-ink/80 transition-[height] duration-75" style={{ height: `${3 + Math.round(l * 26)}px` }} />
+                  ))}
+                </div>
+                <span className="w-12 shrink-0 self-center text-center text-[14px] tabular-nums text-ink-muted">
+                  {Math.floor(dictation.seconds / 60)}:{String(dictation.seconds % 60).padStart(2, '0')}
+                </span>
+                <button type="button" aria-label="Done" onClick={dictation.stop} className="flex h-11 w-11 shrink-0 items-center justify-center press btn-primary rounded-full text-base">
+                  <Check size={19} strokeWidth={2.2} aria-hidden />
+                </button>
+              </>
+            ) : (
+              <>
+                {dictation.state === 'transcribing' ? (
+                  <span className="writing min-w-0 flex-1 self-center text-[16px] text-ink-muted">Writing it down…</span>
+                ) : (
+                  <textarea
+                    ref={input}
+                    rows={1}
+                    value={text}
+                    onChange={(e) => setText(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
+                        e.preventDefault();
+                        say(text);
+                      }
+                    }}
+                    placeholder="Message"
+                    aria-label="Message"
+                    maxLength={1000}
+                    className="max-h-[120px] min-w-0 flex-1 resize-none self-center bg-transparent py-1 text-[16px] leading-[22px] text-ink outline-none placeholder:text-ink-faint"
+                  />
+                )}
+                {dictation.available && (
+                  <button type="button" aria-label="Talk" onClick={() => void dictation.start()} disabled={talking} className="press flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-ink-soft disabled:opacity-40">
+                    <Mic size={20} strokeWidth={1.9} aria-hidden />
+                  </button>
+                )}
+                <button type="submit" aria-label="Send" disabled={!text.trim() || busy || talking} className="flex h-11 w-11 shrink-0 items-center justify-center press btn-primary rounded-full text-base disabled:opacity-30">
+                  <ArrowUp size={18} strokeWidth={2.2} aria-hidden />
+                </button>
+              </>
+            )}
           </form>
         </div>
       )}

@@ -3,7 +3,7 @@ type: conceptual
 title: Coach
 description: How the coach plans and talks — setup, the built-in planner, the laws, the week, the brief sent to the LLM, the phone-side tools and the chat relay.
 tags: [coach, llm, planner, laws, brief, tools]
-timestamp: 2026-11-10
+timestamp: 2026-11-11
 ---
 
 # Coach
@@ -36,7 +36,16 @@ tools.
   for, days, minutes, gear) into `quickAnswers` and `applySetup`; the rest of the profile starts
   in the middle and the coach learns it. `CoachTab.tsx` is the Week and the Chat. `useCoach.ts`
   keeps two weeks planned (`useCoachPlan`), lets the coach replan a due week on its own once
-  signed in (`useCoachAutoPlan`), and runs the chat (`useCoachChat`).
+  signed in (`useCoachAutoPlan`), and runs the chat (`useCoachChat`). While the coach works, the
+  chat shows a small `CoachOrb` weaving beside the current tool step.
+- **Dictation** (`ui/useDictation.ts`, `app/api/voice/transcribe/route.ts`): the mic in the
+  message bar records (a moving line of your voice and a timer, X to drop it, a tick to keep
+  it); the audio goes to the app's own server route, which asks Deepgram Nova-3 and sends back
+  the words. They land in the box after anything typed, to edit or send. The route needs
+  `DEEPGRAM_API_KEY` (else 503) and a signed-in caller once Supabase is set up; before that it
+  answers only with `VOICE_OPEN=1`. The box grows to five lines; Enter sends.
+- **Demo** (`ui/demo.ts`): open the app with `?sandbox&demo` and the chat runs on a made-up coach
+  (`demoAsk`: a short script that calls real read-only tools, nothing sent to the server).
 
 ## The voice
 

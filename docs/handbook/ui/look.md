@@ -57,6 +57,11 @@ with tight tracking.
   canvas behind the hero. `calm` slows it. Stops when the tab is hidden; still under reduced motion.
 - `Weave`: the logo as a clock (the rest screen): its five parts draw in one after another,
   counter-clockwise and ending on the iris part like the opening screen, as `value` grows, until the mark is whole.
+- `CoachOrb`: the weave as the coach's face (chat and voice). `thinking`: the parts draw in
+  counter-clockwise at one even pace, rest whole, turn once (slowing into the rest) and let go,
+  then weave again. `talking`: whole, each part pushed out a little with the voice level.
+  `listening`: whole, white parts dimmed, a slow breath. Leaving `thinking`, it finishes its weave
+  and lands whole. Painted each frame by `requestAnimationFrame`; still under reduced motion.
 - `TabBar`: floating glass pill, four icons (lucide), the open one lit.
 - `Screen`: a full screen with its glow, safe-area padding and room for the tab bar. `fit` locks it
   to the phone's height so nothing scrolls (the workout). `Label` is a
@@ -79,7 +84,7 @@ after, counts the week's workouts next to the title on Today (68px), and is the 
 The hero on Today moves a little more: a ribbon of light drifts through it (`Silk`), the week
 ring turns into place (`.turn-in`), and the days land one by one (`.day-in`). Everywhere else: quiet and short. A screen's parts rise in one after another (`.rise`, set by `Screen`, replayed
 when its `view` changes). The lit pill in `Segmented` and the lit circle in `TabBar` slide.
-Anything pressed gives a little (`.press`). A changed number pops (`.pop`). Sheets slide up
+Anything pressed gives a little (`.press`). A changed number pops (`.pop`). While dictation is written down, the line saying so breathes (`.writing`). Sheets slide up
 (`.sheet` over `.fade`). The glow breathes over nine seconds. A logged set gives a short buzz
 where the phone allows. A new best gets a moment: the number glows warm while you are ahead of
 last time, and once logged the rest ring pulses once (`.best-halo`, `.best-num`). The last three
