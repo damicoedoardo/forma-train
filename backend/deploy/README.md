@@ -6,7 +6,8 @@ compose network. It reuses the game's Postgres (its own `train` database), LiteL
 1. **DNS**: an A record for the api domain to the server.
 2. **Code**: `git clone https://github.com/damicoedoardo/forma-train /root/forma-train`.
 3. **Database**: run `setup-db.sql` once in the game's Postgres, with a new password.
-4. **Coach model**: add `litellm-train.yaml` to the game's LiteLLM config, restart LiteLLM, and
+4. **Coach model**: add `litellm-train.yaml` (the game's DeepSeek model under the `train-coach` name)
+   to the game's LiteLLM config, restart LiteLLM, and
    make a LiteLLM key for the api.
 5. **Settings**: `cp env.train.example .env.train` and fill it in.
 6. **Start**: `docker compose -f compose.train.yml --env-file .env.train up -d --build`.

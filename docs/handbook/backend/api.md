@@ -50,6 +50,6 @@ uv run ruff check . && uv run ruff format --check .
 `backend/deploy/` holds what the server needs; its `README.md` lists the steps. The api is one
 extra container (`compose.train.yml`, `forma_train_api`) on the game server's compose network
 (`forma_default`). It reuses the game's Postgres with its own `train` database (`setup-db.sql`),
-the game's LiteLLM with a `train-coach` model entry (`litellm-train.yaml`), and the game's Caddy
+the game's LiteLLM with a `train-coach` model entry for the same DeepSeek model the game uses (`litellm-train.yaml`), and the game's Caddy
 with one more site block (`Caddyfile.train`). Settings go in `.env.train` from
 `env.train.example`. It is not live yet: the api domain and Supabase project are still open.
