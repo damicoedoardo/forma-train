@@ -105,7 +105,7 @@ export function Today({ state, now, onStart, onRest, onCoach }: { state: Trainin
       )}
 
 
-      <div className="sticky z-10 mt-auto flex gap-3 pt-6" style={{ bottom: 'calc(env(safe-area-inset-bottom) + 96px)' }}>
+      <div className="mt-4 flex gap-3">
         {going ? (
           <Button className="flex-1" onClick={onStart}>
             Continue · {setCount(state, workout).done}/{setCount(state, workout).of}

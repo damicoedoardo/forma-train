@@ -3,7 +3,7 @@ type: conceptual
 title: Code structure
 description: The folders of Forma — app routes, the UI kit, one folder per feature with pure rules and their screens, shared platform code, the backend — and the import rules between them.
 tags: [architecture, structure, layers]
-timestamp: 2026-11-10
+timestamp: 2026-11-11
 ---
 
 # Code structure
@@ -13,7 +13,7 @@ the app (`src/app/page.tsx`); the save lives on the phone, with a cloud backup o
 
 ```
 src/app/         Routes: the app (page.tsx), layout, manifest, globals.css
-src/ui/          The UI kit: Glass, Button, Segmented, Glow, TabBar, Screen, Stats, Avatar, Chip
+src/ui/          The UI kit: Glass, Button, Segmented, Glow, TabBar, Screen, Stats, Avatar, Chip, Intro (the opening screen), Silk, Weave
 src/features/    One folder per feature (training, coach, exercises, social, account)
   <feature>/     Pure rules and types (*.ts), tested next to them (*.test.ts)
   <feature>/ui/  That feature's screens and hooks (React)

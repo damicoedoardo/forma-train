@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import type { Metadata, Viewport } from 'next';
 import { ServiceWorker } from '@/platform/pwa/ServiceWorker';
 import { ViewportHeal } from '@/platform/pwa/ViewportHeal';
+import { Intro } from '@/ui/Intro';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -31,6 +32,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       </head>
       <body className="font-sans antialiased">
         {children}
+        <Intro />
         <ServiceWorker />
         <ViewportHeal />
       </body>
