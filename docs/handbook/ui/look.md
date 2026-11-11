@@ -77,7 +77,7 @@ Forma's one signature shape, added 2026-11-10. A circle cut into segments, one p
 ones are ink, the one you are on is the accent (a gradient, blue to iris), the rest wait. It
 holds the rep counter in the workout, drains as the rest clock, closes in ink on the screen
 after, counts the week's workouts next to the title on Today (68px), and is the app icon
-(`public/icon-*.png`, the weave: five parts, each tucked under the next, one in iris). `flash` gives it one pulse of warm light (a new best). Use it only for progress you can count; never as decoration.
+(`public/weave-*.png`, the weave; new icon art needs new file names, since phones and the service worker keep an icon by its address: five parts, each tucked under the next, one in iris). `flash` gives it one pulse of warm light (a new best). Use it only for progress you can count; never as decoration.
 
 ## Motion (`globals.css`)
 

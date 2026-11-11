@@ -12,7 +12,13 @@ export const metadata: Metadata = {
   applicationName: 'Forma',
   appleWebApp: { capable: true, title: 'Forma', statusBarStyle: 'black-translucent' },
   formatDetection: { telephone: false },
-  icons: { icon: '/icon-192.png', apple: '/apple-touch-icon.png' },
+  icons: {
+    icon: [
+      { url: '/weave-32.png', sizes: '32x32', type: 'image/png' },
+      { url: '/weave-192.png', sizes: '192x192', type: 'image/png' },
+    ],
+    apple: [{ url: '/weave-apple-180.png', sizes: '180x180' }],
+  },
 };
 
 export const viewport: Viewport = {
