@@ -10,6 +10,8 @@ const arc = (from: number, sweep: number) => `M${at(from)}A${R} ${R} 0 0 1 ${at(
 /** The same arc, drawn from its far end back to its start. */
 const back = (from: number, sweep: number) => `M${at(from + sweep)}A${R} ${R} 0 0 0 ${at(from)}`;
 const PARTS = [0, 1, 2, 3, 4];
+/** The order the parts draw in: counter-clockwise, ending on the iris one (3). */
+const ORDER = [2, 1, 0, 4, 3];
 
 type Props = {
   size?: number;
@@ -28,9 +30,9 @@ type Props = {
 export function Weave({ size = 264, value, label, flash, children, className = '' }: Props) {
   const uid = useId().replace(/[^a-zA-Z0-9]/g, '');
   const v = Math.max(0, Math.min(1, value));
-  // How far each part is drawn, 0 to 1. Like the opening screen, the weave builds counter-clockwise:
-  // the last part first, each one coming out from under the part before it.
-  const drawn = PARTS.map((i) => Math.max(0, Math.min(1, v * 5 - (4 - i))));
+  // How far each part is drawn, 0 to 1. Like the opening screen, the weave builds counter-clockwise,
+  // each part coming out from under the one before it, and ends on the iris part.
+  const drawn = PARTS.map((i) => Math.max(0, Math.min(1, v * 5 - ORDER.indexOf(i))));
   return (
     <div role="img" aria-label={label} className={`relative shrink-0 ${className}`} style={{ width: `min(${size}px, 40dvh)`, height: `min(${size}px, 40dvh)` }}>
       {flash && <span aria-hidden className="best-halo pointer-events-none absolute inset-0 rounded-full" />}
@@ -52,8 +54,8 @@ export function Weave({ size = 264, value, label, flash, children, className = '
         <g style={{ filter: 'drop-shadow(0 0 2.6px rgba(110,116,240,0.5))' }}>
           {PARTS.map((i) => (
             // Tucked under the next part only once that part's head is there: always for the parts
-            // drawn after it, and for the first one drawn (4) when the last one (0) lands on it.
-            <g key={i} mask={(i === 4 ? drawn[0] >= 0.98 : drawn[i + 1] > 0) ? `url(#${uid}-${i})` : undefined}>
+            // drawn after it, and for the first one drawn when the last one lands on it.
+            <g key={i} mask={(i === ORDER[0] ? drawn[ORDER[4]] >= 0.98 : drawn[(i + 1) % 5] > 0) ? `url(#${uid}-${i})` : undefined}>
               <path
                 d={back(-126 + 72 * i, 76)}
                 className="ring-arc"
