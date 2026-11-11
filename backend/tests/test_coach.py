@@ -15,10 +15,14 @@ ANA = "11111111-1111-4111-8111-111111111111"
 class FakeModel:
     def __init__(self, stop: str = "stop") -> None:
         self.calls: list[tuple[str, list[dict[str, Any]]]] = []
+        self.finals: list[bool] = []
         self.stop = stop
 
-    async def ask(self, brief: str, messages: list[dict[str, Any]], user: str) -> dict[str, Any]:
+    async def ask(
+        self, brief: str, messages: list[dict[str, Any]], user: str, final: bool = False
+    ) -> dict[str, Any]:
         self.calls.append((brief, messages))
+        self.finals.append(final)
         return {"message": {"role": "assistant", "content": "Hi!"}, "finish_reason": self.stop}
 
 
@@ -42,6 +46,13 @@ def test_passes_brief_and_chat(fake):
     assert r.json()["message"]["content"] == "Hi!"
     assert r.json()["left_today"] == settings.coach_turns_per_day - 1
     assert fake.calls == [("No setup yet.", [{"role": "user", "content": "hello"}])]
+
+
+def test_final_asks_for_words(fake):
+    c = TestClient(app)
+    c.post("/coach", json=say("hello"))
+    c.post("/coach", json={**say("again"), "final": True})
+    assert fake.finals == [False, True]
 
 
 def test_tool_results_are_not_a_turn(fake):

@@ -28,7 +28,12 @@ tools.
   the person, rebuilt from the save on every message.
 - **Tools and chat** (`tools.ts`, `chat.ts`, `client.ts`): `askCoach` sends the brief and the
   chat to `POST /coach`; tool calls come back and run on the phone (`runTool`), and their
-  results go out with the next call.
+  results go out with the next call. A turn is at most `MAX_ROUNDS` (8) calls; the last is sent
+  with `final`, so the api asks the model for words only (`tool_choice: none`), and a turn never
+  ends in silence (`STUCK` if it still says nothing). Offered replies (`suggest_replies`) end the
+  turn only once the coach has said something. The save keeps the last `TURNS_KEEP` (10)
+  exchanges whole, capped at `CHAT_KEEP` (100) messages (`trimChat`), and `shownChat` keys each
+  line by what it says, so trimming never redraws the chat.
 - **Numbers** (`config.ts`): rest, ramp, time and cool-down defaults.
 - **Titles** (`title.ts`): `shortTitle` ("Pull, push, squat") and `titleKind` ("Calisthenics")
   split a built-in title for screens.

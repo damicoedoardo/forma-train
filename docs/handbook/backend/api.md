@@ -23,7 +23,7 @@ run without a database or a key.
 | `PUT /me/profile`, `PUT/DELETE /me/photo`, `GET /profiles/{id}/photo` | The profile friends see |
 | `POST /cheers`, `POST /cheers/take` | A short line to a friend, mostly mid-workout |
 | `POST/GET /feed`, `GET /feed/{id}/photo`, `POST /feed/{id}/flame`, comments, `DELETE` | Shared workouts |
-| `POST /coach` | One coach turn: brief + chat in, the model's answer out |
+| `POST /coach` | One coach turn: brief + chat in, the model's answer out (`final: true`: words only, no tools) |
 | `GET /health` | `{"status": "ok"}` |
 
 The tables are in `backend/db/init.sql` and each store's `SCHEMA` (created on start).

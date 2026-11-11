@@ -36,6 +36,8 @@ def get_model() -> Model:
 class Ask(BaseModel):
     brief: str = Field(max_length=16_000)
     messages: list[dict[str, Any]] = Field(min_length=1, max_length=120)
+    # The turn's last call: the phone wants words now, not more tools.
+    final: bool = False
 
 
 def _is_turn(m: dict[str, Any]) -> bool:
@@ -59,7 +61,7 @@ async def ask(
     if turns > settings.coach_turns_per_day or calls > settings.coach_calls_per_day:
         raise HTTPException(status.HTTP_429_TOO_MANY_REQUESTS, "The coach rests until tomorrow")
     try:
-        out = await model.ask(body.brief, body.messages, user.user_id)
+        out = await model.ask(body.brief, body.messages, user.user_id, final=body.final)
     except HTTPException:
         raise
     except Exception as e:  # The model's own errors: say so plainly, keep the details in logs.
