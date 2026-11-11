@@ -20,7 +20,7 @@ src/features/    One folder per feature (training, coach, exercises, social, acc
 src/platform/    Shared plumbing: the store, the api client, random, the ticking clock (useNow), the screen wake lock (useWakeLock), the chime, pwa/ (the service worker and update check, and the fix for the iPhone keyboard)
 backend/         FastAPI on our server: login check, backup, coach relay, social
 scripts/         Node tools: the handbook check
-public/          Service worker and icons
+public/          Service worker and icons (weave-*.png; the manifest is src/app/manifest.ts)
 docs/handbook/   This handbook
 ```
 
