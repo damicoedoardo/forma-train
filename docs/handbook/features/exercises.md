@@ -20,9 +20,12 @@ timestamp: 2026-11-11
 - **`guide.ts`**: `guideFor` builds an exercise's page: the video, up to four things to do (the
   movement's tips) and to avoid (its common mistakes), and the muscles it works. It takes library
   ids, FORMA's own moves with or without `forma:`, and built-in ids that are only a move.
-- **`photos.ts`**: `photosOf` gives a catalog exercise's two photos (start and end of the move)
-  from free-exercise-db on GitHub; shown one after the other they make a short loop. FORMA's own
-  moves and the runs have none.
+- **`anatomy/`**: Forma's own exercise animations, brought over from the game (2026-11-11): a
+  plain vector body doing one rep, the worked muscles colored (main in the accent, helpers in
+  iris). `anatomyFor(move, name)` picks the demo for an exercise (147 demos, about 880 of the
+  890 exercises); `scene(id, view, t)` gives the SVG paths for a moment of the rep. Pure
+  geometry (`skeleton.ts`, `keys.ts`, `moves.ts`, `body.ts`); colors are `INK` in `body.ts`.
+  `features/training/ui/BodyDemo.tsx` plays it.
 
 Tests (`library.test.ts`, `videos.test.ts`) check every id resolves and every video points at a
 real exercise.

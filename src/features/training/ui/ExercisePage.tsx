@@ -2,26 +2,26 @@
 
 import { useEffect, useState } from 'react';
 import { Check, ChevronLeft, Play, X } from 'lucide-react';
-import { Glass, Label, Loop, Screen } from '@/ui';
+import { Glass, Label, Screen } from '@/ui';
 import { loadLibrary } from '@/features/exercises/library';
 import { guideFor, type Guide } from '@/features/exercises/guide';
-import { photosOf } from '@/features/exercises/photos';
+import { INK, MUSCLE_NAME, WORKS, anatomyFor } from '@/features/exercises/anatomy/body';
 import { videoEmbedUrl, videoSearchUrl } from '@/features/exercises/videos';
 import type { WorkoutExercise } from '../session';
 import { doseText } from '../workout';
+import { BodyDemo } from './BodyDemo';
 
 /* One exercise, opened from Today's list: the how-to video on top, then what to do and what to
    avoid. It covers the screen and slides up; back closes it. */
 
 export function ExercisePage({ q, onClose }: { q: WorkoutExercise; onClose: () => void }) {
   const [guide, setGuide] = useState<Guide | null>(null);
-  const [frames, setFrames] = useState<[string, string] | null>(null);
+  const body = anatomyFor(q.move, q.name);
   useEffect(() => {
     let live = true;
     loadLibrary().then((all) => {
       if (!live) return;
       setGuide(guideFor(all, q));
-      setFrames(photosOf(all, q.id));
     });
     return () => {
       live = false;
@@ -47,8 +47,8 @@ export function ExercisePage({ q, onClose }: { q: WorkoutExercise; onClose: () =
         <div className="mt-5 aspect-video w-full overflow-hidden rounded-[24px] border border-white/10 bg-black/40">
           {guide?.video ? (
             <iframe src={videoEmbedUrl(guide.video.id)} title={guide.video.title} className="h-full w-full bg-black" allow="encrypted-media; picture-in-picture; fullscreen" allowFullScreen />
-          ) : guide && frames ? (
-            <Loop frames={frames} className="h-full w-full" />
+          ) : guide && body ? (
+            <BodyDemo move={q.move} name={q.name} className="h-full w-full" />
           ) : guide ? (
             <a href={videoSearchUrl(q.name)} target="_blank" rel="noreferrer" className="press flex h-full w-full flex-col items-center justify-center gap-3 text-ink-muted">
               <span className="glass flex h-14 w-14 items-center justify-center rounded-full text-ink">
@@ -66,6 +66,24 @@ export function ExercisePage({ q, onClose }: { q: WorkoutExercise; onClose: () =
           </div>
           <span className="glass num shrink-0 rounded-pill px-3.5 py-1.5 text-[14px] text-ink-soft">{doseText(q)}</span>
         </div>
+
+        {body && guide?.video && (
+          <Glass className="mt-6 flex flex-col items-center gap-3 overflow-hidden p-0 pb-4">
+            <BodyDemo move={q.move} name={q.name} className="h-[200px] w-full" />
+            <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 px-4 text-[13px] text-ink-soft">
+              <span className="flex items-center gap-1.5">
+                <span aria-hidden className="h-2 w-2 rounded-full" style={{ background: INK.work }} />
+                {WORKS[body.id].main.map((m) => MUSCLE_NAME[m]).join(', ')}
+              </span>
+              {WORKS[body.id].help.length > 0 && (
+                <span className="flex items-center gap-1.5 text-ink-muted">
+                  <span aria-hidden className="h-2 w-2 rounded-full" style={{ background: INK.help }} />
+                  {WORKS[body.id].help.map((m) => MUSCLE_NAME[m]).join(', ')}
+                </span>
+              )}
+            </div>
+          </Glass>
+        )}
 
         {guide && guide.dos.length > 0 && <Cues label="Do" items={guide.dos} good />}
         {guide && guide.donts.length > 0 && <Cues label="Avoid" items={guide.donts} />}

@@ -51,8 +51,6 @@ with tight tracking.
 - `Screen`: a full screen with its glow, safe-area padding and room for the tab bar. `Label` is a
   small muted heading; `Chip` a small pill to tap (a quick reply, a setup choice).
 - `Stats`: a row of big numbers with a word under each (sets, this week, streak).
-- `Loop`: a short loop from two still frames (an exercise's start and end), the second fading
-  in and out (`.loop-frame`); without frames, a quiet tile.
 - `Avatar`: a round photo, or the initials on one of four quiet tones.
 - Sheets (add a friend, cheer, edit profile, close a workout) slide up over a dim backdrop on a
   near-opaque glass card.

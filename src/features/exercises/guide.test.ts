@@ -20,15 +20,3 @@ describe('an exercise page', () => {
   });
 });
 
-describe('an exercise loop', () => {
-  it('has two catalog photos, and none for our own moves', async () => {
-    const { photosOf } = await import('./photos');
-    const all = await loadLibrary();
-    expect(photosOf(all, 'Pushups')).toEqual([
-      'https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Pushups/0.jpg',
-      'https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Pushups/1.jpg',
-    ]);
-    expect(photosOf(all, 'forma:tuck-lsit')).toBeNull();
-    expect(photosOf(all, 'nothing')).toBeNull();
-  });
-});

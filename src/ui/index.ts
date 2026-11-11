@@ -11,4 +11,3 @@ export { Avatar } from './Avatar';
 export { Stats } from './Stats';
 export { Screen, Label, Chip } from './Screen';
 export { Ring } from './Ring';
-export { Loop } from './Loop';
