@@ -31,7 +31,9 @@ timestamp: 2026-11-11
   (warm-up and cool-down as one line each; each move plays our own animation of it,
   `BodyDemo`, and opens its page on a tap), the coach's line, and Start / Continue / Mark rested.
 - **`ui/BodyDemo.tsx`**: plays an exercise's anatomy animation (`features/exercises/anatomy`)
-  at about 30 fps; a quiet dumbbell tile when the move has none.
+  in the rich look at about 30 fps: it defines the gradients and blurs under its own ids and
+  layers the shadow, the ghost, the body and the glow. `small` (Today's rows) leaves out the
+  blurs. A quiet dumbbell tile when the move has none.
 - **`ui/ExercisePage.tsx`**: one exercise, opened from Today: the video on top, the animation
   with the muscles it works, then Do and
   Avoid (`guideFor` in `features/exercises/guide.ts`). It covers the screen; the phone's back

@@ -85,7 +85,7 @@ export function Today({ state, now, onStart, onRest, onCoach }: { state: Trainin
           {rows(workout).map((r, i) =>
             r.q ? (
               <button key={r.key} type="button" onClick={() => setOpen(r.q!)} className={`press flex items-center gap-3 py-2.5 text-left ${i ? 'border-t hairline' : ''}`}>
-                <BodyDemo move={r.q.move} name={r.q.name} className="h-[52px] w-[52px] rounded-[14px]" />
+                <BodyDemo small move={r.q.move} name={r.q.name} className="h-[52px] w-[52px] rounded-[14px]" />
                 <span className="min-w-0 flex-1 truncate text-[16px]">{r.name}</span>
                 <span className="flex items-center gap-1.5">
                   <span className="num text-[15px] text-ink-muted">{r.dose}</span>
