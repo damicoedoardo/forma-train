@@ -1,0 +1,8 @@
+# Add this entry under `model_list:` in the game's LiteLLM config, then restart LiteLLM.
+# The api always asks for `train-coach`; which real model answers is decided only here,
+# so switching models needs no deploy. Use the same DeepSeek model the game's coach uses:
+# copy its `litellm_params` from the game's entry.
+- model_name: train-coach
+  litellm_params:
+    model: <the game's DeepSeek model, as in its entry>
+    api_key: os.environ/OPENROUTER_API_KEY

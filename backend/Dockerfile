@@ -1,5 +1,4 @@
-# The API's image. Deploying it (GHCR and the server) comes later; see
-# docs/handbook/architecture/backend.md.
+# The API's image. It is built on the server; see backend/deploy/README.md.
 FROM python:3.12-slim
 
 WORKDIR /app

@@ -13,10 +13,10 @@ class Settings(BaseSettings):
 
     database_url: str = "postgresql://train:train_dev@localhost:5432/train"
 
-    # The web app's origins: local dev here, production and Vercel previews by the pattern.
-    # The production address goes in TRAIN_CORS_ORIGINS on the server once it exists.
+    # The web app's origins: local dev here; production (forma-train-one.vercel.app) and the
+    # Vercel previews by the pattern. A custom app domain goes in TRAIN_CORS_ORIGINS.
     cors_origins: str = "http://localhost:3000"
-    cors_origin_regex: str = r"https://forma-train(-.*-edoardo-damicos-projects)?\.vercel\.app"
+    cors_origin_regex: str = r"https://forma-train(-one|-.*-edoardo-damicos-projects)?\.vercel\.app"
 
     # The biggest save we keep, in bytes of JSON. A real save is a few hundred KB at most.
     max_save_bytes: int = 2_000_000

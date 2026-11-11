@@ -1,0 +1,26 @@
+# Forma Train's api, run next to the FORMA game on the same server.
+# It joins the game's compose network, so it reaches the game's Postgres (its own database,
+# `train`), LiteLLM and Caddy by name. Nothing here touches the game's own containers.
+#
+#   cd /root/forma-train/backend/deploy
+#   docker compose -f compose.train.yml --env-file .env.train up -d --build
+services:
+  train-api:
+    build: ..
+    container_name: forma_train_api
+    restart: unless-stopped
+    env_file: .env.train
+    environment:
+      TRAIN_ENV: production
+    # The server has little spare memory (no swap), so keep this one small.
+    mem_limit: 300m
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    networks: [forma_default]
+
+networks:
+  forma_default:
+    external: true
