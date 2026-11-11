@@ -12,14 +12,14 @@ const REP = 3.6;
     of the move standing faint behind. Still under reduced motion and for holds. With no
     animation for the move, a quiet tile. `small` (list rows) leaves out the blurs to spare
     the phone. */
-export function BodyDemo({ move, name, view = 'side', small = false, bare = false, className = '' }: { move: string; name: string; view?: 'side' | 'front'; small?: boolean; /** No tile behind it: the body stands on the screen's own light. */ bare?: boolean; className?: string }) {
+export function BodyDemo({ move, name, view = 'side', small = false, bare = false, paused = false, className = '' }: { move: string; name: string; view?: 'side' | 'front'; small?: boolean; /** One still picture of the move, no loop. */ paused?: boolean; /** No tile behind it: the body stands on the screen's own light. */ bare?: boolean; className?: string }) {
   const body = anatomyFor(move, name);
   const uid = useId().replace(/[^a-zA-Z0-9]/g, '');
   const [t, setT] = useState(0);
   const [still, setStill] = useState(false);
 
   useEffect(() => {
-    if (!body) return;
+    if (!body || paused) return;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
       setStill(true);
       return;
@@ -37,7 +37,7 @@ export function BodyDemo({ move, name, view = 'side', small = false, bare = fals
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [body?.id]);
+  }, [body?.id, paused]);
 
   if (!body)
     return (
@@ -45,7 +45,7 @@ export function BodyDemo({ move, name, view = 'side', small = false, bare = fals
         <Dumbbell size={18} strokeWidth={1.75} />
       </div>
     );
-  const s = scene(body.id, view, t, { still, variant: body.variant, rich: true });
+  const s = scene(body.id, view, t, { still: still || paused, variant: body.variant, rich: true });
   const [x, y, w, h] = s.viewBox.split(' ').map(Number);
   // The scene names its gradients `fm-…`; each player on the page needs its own.
   const own = (v?: string) => (v ? v.replace('#fm-', `#${uid}-`) : v);
