@@ -1,8 +1,8 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { ChevronRight, Dumbbell } from 'lucide-react';
-import { Button, Glass, Mark, Ring } from '@/ui';
+import { Button, Glass, Mark, Ring, Silk } from '@/ui';
 import { currentPlan, isRestToday, restKept, todayIs, weekRing, weekSlots, weekdayOf } from '@/features/coach/week';
 import { freshNudge, coachNudge } from '@/features/coach/nudge';
 import { minutesOf } from '@/features/coach/validate';
@@ -12,15 +12,9 @@ import { dayType, isTap, todaysWorkout, type TrainingState, type WorkoutExercise
 import { doseText, setCount } from '../workout';
 import { ExercisePage } from './ExercisePage';
 import { BodyDemo } from './BodyDemo';
-import { anatomyFor } from '@/features/exercises/anatomy/body';
 
-/* Today: the hero (the date, the workout, the week as a ring, a live preview that plays each of
-   today's moves in turn, the week's days), the coach's one line, the list, and Start. The list
-   shows each move as a still; the one on stage is lit. A move opens its page: the video, what to
-   do, what to avoid. */
-
-/** How long each move stays on the hero's stage: two reps. */
-const SHOW = 7200;
+/* Today: the date, the workout, the week as a ring and at a glance, the coach's one line, and Start. Each
+   move in the list plays our own animation of it and opens its page: the video, what to do, what to avoid. */
 
 const DATE = new Intl.DateTimeFormat('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
 
@@ -39,16 +33,6 @@ export function Today({ state, now, onStart, onRest, onCoach }: { state: Trainin
   const ring = weekRing(state.coach?.week, now);
   const [open, setOpen] = useState<WorkoutExercise | null>(null);
   const close = useCallback(() => setOpen(null), []);
-  // The moves we can show on the stage, and which one is on now.
-  const cast = moves.filter((q) => anatomyFor(q.move, q.name));
-  const [at, setAt] = useState(0);
-  useEffect(() => {
-    if (cast.length < 2 || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    const t = window.setInterval(() => setAt((a) => a + 1), SHOW);
-    return () => window.clearInterval(t);
-  }, [cast.length]);
-  const onStage = cast.length ? cast[at % cast.length] : null;
-  const stage = !ahead && onStage;
 
   return (
     <>
@@ -61,7 +45,8 @@ export function Today({ state, now, onStart, onRest, onCoach }: { state: Trainin
       </div>
 
       <div className="hero relative mt-7 overflow-hidden rounded-[28px] px-5 pb-5 pt-5">
-      <span aria-hidden className="hero-sheen" />
+      {/* A ribbon of light drifts through the card; slower on rest and done days. */}
+      <Silk calm={ahead} className="absolute inset-0 h-full w-full" />
       <div className="relative flex items-start justify-between gap-4">
         <div className="flex min-w-0 flex-col gap-1.5">
           <span className="mb-3 text-[13px] text-white/60">{DATE.format(now)}</span>
@@ -87,27 +72,6 @@ export function Today({ state, now, onStart, onRest, onCoach }: { state: Trainin
           </Ring>
         )}
       </div>
-      {stage && (
-        <button type="button" aria-label={`${stage.name}: how to do it`} onClick={() => setOpen(stage)} className="press relative mt-3 block h-[200px] w-full text-left">
-          {/* Each move walks on, does two reps, and makes room for the next. */}
-          <BodyDemo key={`${stage.id}${at}`} bare move={stage.move} name={stage.name} className="walk-on absolute inset-0 h-full w-full" />
-          <span key={`n${at}`} className="walk-on absolute bottom-0 left-0 flex flex-col gap-0.5">
-            <span className="num text-[12px] text-white/50">
-              {String((at % cast.length) + 1).padStart(2, '0')} / {String(cast.length).padStart(2, '0')}
-            </span>
-            <span className="text-[15px] text-white/90">{stage.name}</span>
-          </span>
-          {cast.length > 1 && (
-            <span aria-hidden className="absolute bottom-1.5 right-0 flex gap-1">
-              {cast.map((q, i) => (
-                <span key={i} className="h-1 w-4 overflow-hidden rounded-full bg-white/[0.16]">
-                  {i === at % cast.length ? <span key={at} className="pip block h-full rounded-full bg-white/90" style={{ animationDuration: `${SHOW}ms` }} /> : i < at % cast.length ? <span className="block h-full bg-white/60" /> : null}
-                </span>
-              ))}
-            </span>
-          )}
-        </button>
-      )}
       <WeekDots state={state} now={now} />
       </div>
 
@@ -123,8 +87,8 @@ export function Today({ state, now, onStart, onRest, onCoach }: { state: Trainin
           {rows(workout).map((r, i) =>
             r.q ? (
               <button key={r.key} type="button" onClick={() => setOpen(r.q!)} className={`press flex items-center gap-3 py-2.5 text-left ${i ? 'border-t hairline' : ''}`}>
-                <BodyDemo small paused move={r.q.move} name={r.q.name} className={`h-[52px] w-[52px] rounded-[14px] ring-1 transition-shadow duration-500 ${r.q === stage ? 'ring-accent-iris/70 shadow-[0_0_14px_rgba(110,116,240,0.45)]' : 'ring-transparent'}`} />
-                <span className={`min-w-0 flex-1 truncate text-[16px] transition-colors duration-500 ${stage && r.q !== stage ? 'text-ink-soft' : ''}`}>{r.name}</span>
+                <BodyDemo small move={r.q.move} name={r.q.name} className="h-[52px] w-[52px] rounded-[14px]" />
+                <span className="min-w-0 flex-1 truncate text-[16px]">{r.name}</span>
                 <span className="flex items-center gap-1.5">
                   <span className="num text-[15px] text-ink-muted">{r.dose}</span>
                   <ChevronRight size={16} strokeWidth={2} className="-mr-1 text-ink-faint" aria-hidden />
@@ -189,7 +153,7 @@ function WeekDots({ state, now }: { state: TrainingState; now: Date }) {
   const slots = week ? weekSlots(week, 0) : [];
   if (!slots.length) return null;
   return (
-    <div className="relative mt-5 grid grid-cols-7 border-t border-white/10 pt-4" aria-label="This week">
+    <div className="relative mt-[84px] grid grid-cols-7 border-t border-white/10 pt-4" aria-label="This week">
       {slots.map((s) => {
         const done = !!s.day?.done;
         const isToday = s.date === today;

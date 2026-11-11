@@ -48,6 +48,8 @@ with tight tracking.
   most; everything else stays glass.
 - `Mark`: the weave (five parts of a ring, each tucked under the next, one in iris) and the
   name "Forma", top left on Today.
+- `Silk`: a ribbon of fine lines of light, blue to iris, drifting and twisting slowly on a
+  canvas behind the hero. `calm` slows it. Stops when the tab is hidden; still under reduced motion.
 - `Weave`: the logo as a clock (the rest screen): its five parts draw in one after another as
   `value` grows, until the mark is whole.
 - `TabBar`: floating glass pill, four icons (lucide), the open one lit.
@@ -69,9 +71,8 @@ after, counts the week's workouts next to the title on Today (68px), and is the 
 
 ## Motion (`globals.css`)
 
-The hero on Today moves a little more: a slow band of light crosses it (`.hero-sheen`), the week
-ring turns into place (`.turn-in`), the days land one by one (`.day-in`), and each move walks onto
-its stage (`.walk-on`) while its pip fills (`.pip`). Everywhere else: quiet and short. A screen's parts rise in one after another (`.rise`, set by `Screen`, replayed
+The hero on Today moves a little more: a ribbon of light drifts through it (`Silk`), the week
+ring turns into place (`.turn-in`), and the days land one by one (`.day-in`). Everywhere else: quiet and short. A screen's parts rise in one after another (`.rise`, set by `Screen`, replayed
 when its `view` changes). The lit pill in `Segmented` and the lit circle in `TabBar` slide.
 Anything pressed gives a little (`.press`). A changed number pops (`.pop`). Sheets slide up
 (`.sheet` over `.fade`). The glow breathes over nine seconds. A logged set gives a short buzz
