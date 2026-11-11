@@ -28,7 +28,9 @@ timestamp: 2026-11-11
   names how a set felt: Easy, Right, Hard (reps in reserve 4+, 2-3, 0-1).
 - **`ui/Today.tsx`**: the Forma mark and a small badge with the workouts done, then the hero card: the date, the workout's title, the week
   as a ring (workouts done of planned, `weekRing`), a ribbon of light drifting through the card
-  (`Silk`, slower on a rest or done day), and the week as seven dots. Then the coach's line, the
+  (`Silk`, slower on a rest or done day), and the week as seven days. Each day is a tap: the hero and the list show that day's
+  workout (`planWorkout`), a soft pill marks the day on show, and "Back to today" (or today's
+  dot) returns. Then the coach's line, the
   workout's list (warm-up and cool-down as one line each; each move plays its animation; a tap
   opens its page), and Start / Continue / Mark rested, right after the list (not pinned).
 - **`ui/BodyDemo.tsx`**: plays an exercise's anatomy animation (`features/exercises/anatomy`)

@@ -138,7 +138,7 @@ export default function Home() {
           onCoach={() => setTab('coach')}
         />
       )}
-      {tab === 'coach' && <CoachTab state={state} update={update} signedIn={signedIn} now={now} onSignIn={toYou} />}
+      {tab === 'coach' && <CoachTab state={state} update={update} signedIn={signedIn} now={now} onSignIn={toYou} onWeek={() => setTab('today')} />}
       {tab === 'friends' && <FriendsTab signedIn={signedIn} code={social.code} onSignIn={toYou} />}
       {tab === 'you' && <YouTab state={state} update={update} now={now} photo={social.me?.photo ?? null} me={social.me} onPhoto={social.refreshMe} onRedo={() => setRedo(true)} />}
     </Screen>

@@ -2,92 +2,27 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ArrowUp, Check, Mic, X } from 'lucide-react';
-import { Button, Chip, Glass, Segmented } from '@/ui';
+import { Button, Chip, Glass } from '@/ui';
 import { CoachOrb } from '@/ui/CoachOrb';
 import { cloudConfigured } from '@/platform/api';
 import { dayKey } from '@/features/training/days';
-import { sessionsThisWeek, WEEKLY_GOAL, type TrainingState } from '@/features/training/session';
+import type { TrainingState } from '@/features/training/session';
 import { shownChat } from '../chat';
 import { freshNudge, hearNudge } from '../nudge';
 import { minutesOf } from '../validate';
-import { daysIn, restKept, weekSlots, weekTally, weekdayOf } from '../week';
+import { daysIn, weekdayOf } from '../week';
 import { useCoachChat } from './useCoach';
 import { shortTitle } from '../title';
 import { demoAsk } from './demo';
 import { useDictation } from './useDictation';
 
-/* The Coach tab: the week it planned, and the chat. With `?demo` in the address the chat runs on a
+/* The Coach tab: the chat. The week lives on Today. With `?demo` in the address the chat runs on a
    made-up coach (`demo.ts`). */
 
-type View = 'week' | 'chat';
 type Update = (fn: (s: TrainingState) => TrainingState) => void;
 
-export function CoachTab({ state, update, signedIn, now, onSignIn }: { state: TrainingState; update: Update; signedIn: boolean; now: Date; onSignIn: () => void }) {
-  const [view, setView] = useState<View>('chat');
-  return (
-    <>
-      <div className="mx-auto w-[200px]">
-        <Segmented
-          label="Coach"
-          options={[
-            { value: 'week', label: 'Week' },
-            { value: 'chat', label: 'Chat' },
-          ]}
-          value={view}
-          onChange={setView}
-        />
-      </div>
-      {view === 'week' ? (
-        // The coach screen is locked to the phone's height (for the chat), so the week scrolls here.
-        <div className="-mx-4 min-h-0 flex-1 overflow-y-auto px-4">
-          <Week state={state} now={now} />
-        </div>
-      ) : (
-        <Chat state={state} update={update} signedIn={signedIn} now={now} onSignIn={onSignIn} onWeek={() => setView('week')} />
-      )}
-    </>
-  );
-}
-
-function Week({ state, now }: { state: TrainingState; now: Date }) {
-  const week = state.coach?.week;
-  const today = dayKey(now);
-  const tally = weekTally(week, now, sessionsThisWeek(state, now), state.coach?.profile?.days ?? WEEKLY_GOAL);
-  const next = week ? daysIn(week, 1) : [];
-  return (
-    <>
-      <div className="mt-8 flex items-baseline justify-between px-1">
-        <h1 className="font-display text-[28px] font-medium tracking-[-0.6px]">This week</h1>
-        <span className="text-[15px] tabular-nums text-ink-muted">
-          {tally.done} / {tally.goal}
-        </span>
-      </div>
-      {week ? (
-        <Glass className="mt-4 flex flex-col px-5 py-1.5">
-          {weekSlots(week, 0).map((s, i) => {
-            const done = !!s.day?.done;
-            const isToday = s.date === today;
-            return (
-              <div key={s.date} className={`flex items-center gap-4 py-3.5 ${i ? 'border-t hairline' : ''}`}>
-                <span className={`w-9 text-[14px] ${isToday ? 'text-ink' : 'text-ink-muted'}`}>{weekdayOf(s.date)}</span>
-                <span className={`flex-1 text-[15px] ${s.day ? '' : 'text-ink-faint'}`}>{s.day ? shortTitle(s.day.plan.title) : restKept(state, s.date) ? 'Rested' : 'Rest'}</span>
-                {s.day && <span className="text-[14px] tabular-nums text-ink-muted">{minutesOf(s.day.plan.items)}m</span>}
-                <span aria-label={done ? 'Done' : undefined} className={`h-2.5 w-2.5 rounded-full ${done ? 'bg-ink' : isToday && s.day ? 'bg-accent shadow-[0_0_8px_rgba(110,116,240,0.6)]' : s.day ? 'border border-white/25' : ''}`} />
-              </div>
-            );
-          })}
-        </Glass>
-      ) : (
-        <Glass className="mt-4 px-5 py-5 text-[15px] text-ink-muted">The week shows here once it is planned.</Glass>
-      )}
-      {next.length > 0 && (
-        <Glass className="mt-3 flex items-center justify-between rounded-[20px] px-5 py-4">
-          <span className="text-[15px] text-ink-muted">Next week</span>
-          <span className="text-[15px]">{next.map((d) => weekdayOf(d.date)).join(' · ')}</span>
-        </Glass>
-      )}
-    </>
-  );
+export function CoachTab({ state, update, signedIn, now, onSignIn, onWeek }: { state: TrainingState; update: Update; signedIn: boolean; now: Date; onSignIn: () => void; onWeek: () => void }) {
+  return <Chat state={state} update={update} signedIn={signedIn} now={now} onSignIn={onSignIn} onWeek={onWeek} />;
 }
 
 function Chat({ state, update, signedIn: real, now, onSignIn, onWeek }: { state: TrainingState; update: Update; signedIn: boolean; now: Date; onSignIn: () => void; onWeek: () => void }) {
@@ -147,7 +82,11 @@ function Chat({ state, update, signedIn: real, now, onSignIn, onWeek }: { state:
 
   return (
     <>
-      <div ref={list} className="mt-6 flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto pb-4">
+      <div className="flex items-center gap-2.5 px-1">
+        <CoachOrb mode={busy ? 'thinking' : 'idle'} size={28} label="Coach" />
+        <span className="font-display text-[17px] font-medium">Coach</span>
+      </div>
+      <div ref={list} className="mt-4 flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto pb-4">
         {lines.map((l) =>
           l.who === 'workout' ? (
             week ? (

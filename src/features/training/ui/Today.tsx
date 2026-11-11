@@ -8,12 +8,12 @@ import { freshNudge, coachNudge } from '@/features/coach/nudge';
 import { minutesOf } from '@/features/coach/validate';
 import { shortTitle, titleKind } from '@/features/coach/title';
 import { dayKey } from '../days';
-import { dayType, isTap, todaysWorkout, type TrainingState, type WorkoutExercise } from '../session';
+import { dayType, isTap, planWorkout, todaysWorkout, type TrainingState, type WorkoutExercise } from '../session';
 import { doseText, setCount } from '../workout';
 import { ExercisePage } from './ExercisePage';
 import { BodyDemo } from './BodyDemo';
 
-/* Today: the date, the workout, the week as a ring and at a glance, the coach's one line, and Start. Each
+/* Today: the date, the workout, the week as a ring and at a glance (tap a day to look at its workout), the coach's one line, and Start. Each
    move in the list plays our own animation of it and opens its page: the video, what to do, what to avoid. */
 
 const DATE = new Intl.DateTimeFormat('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
@@ -32,6 +32,11 @@ export function Today({ state, now, onStart, onRest, onCoach }: { state: Trainin
   const ahead = day.kind === 'done' || (rest && !going);
   const ring = weekRing(state.coach?.week, now);
   const [open, setOpen] = useState<WorkoutExercise | null>(null);
+  // Another day of the week, picked in the hero to look at (null: today).
+  const [pick, setPick] = useState<string | null>(null);
+  const today = dayKey(now);
+  const peek = pick && pick !== today ? (state.coach?.week ? weekSlots(state.coach.week, 0).find((x) => x.date === pick) : undefined) : undefined;
+  const peekList = peek?.day ? planWorkout(state, peek.day.plan) : [];
   const close = useCallback(() => setOpen(null), []);
 
   return (
@@ -49,8 +54,21 @@ export function Today({ state, now, onStart, onRest, onCoach }: { state: Trainin
       <Silk calm={ahead} className="absolute inset-0 h-full w-full" />
       <div className="relative flex items-start justify-between gap-4">
         <div className="flex min-w-0 flex-col gap-1.5">
-          <span className="mb-3 text-[13px] text-white/60">{DATE.format(now)}</span>
-          {ahead ? (
+          <span className="mb-3 text-[13px] text-white/60">{DATE.format(peek ? new Date(`${peek.date}T12:00:00`) : now)}</span>
+          <div key={peek?.date ?? 'today'} className="fade flex flex-col gap-1.5">
+          {peek ? (
+            peek.day ? (
+              <>
+                <h1 className="font-display text-[34px] font-medium leading-[38px] tracking-[-1px]">{shortTitle(peek.day.plan.title)}</h1>
+                <span className="text-[15px] text-white/60">{[titleKind(peek.day.plan.title), `${minutesOf(peek.day.plan.items.filter((i) => !i.skipped))} min`, peek.day.done ? 'Done' : `${peekList.filter((q) => !isTap(q)).length} moves`].join(' · ')}</span>
+              </>
+            ) : (
+              <>
+                <h1 className="font-display text-[34px] font-medium leading-[38px] tracking-[-1px]">Rest day</h1>
+                <span className="text-[15px] text-white/60">{restKept(state, peek.date) ? 'Rested' : 'Nothing planned'}</span>
+              </>
+            )
+          ) : ahead ? (
             <>
               <span className="text-[15px] text-white/60">{day.kind === 'done' ? 'Done today' : kept ? 'Rested' : 'Rest day'}</span>
               <h1 className="font-display text-[34px] font-medium leading-[38px] tracking-[-1px]">{day.next ? `Next: ${weekdayOf(day.next.date)}` : 'Week done'}</h1>
@@ -62,6 +80,7 @@ export function Today({ state, now, onStart, onRest, onCoach }: { state: Trainin
               <span className="text-[15px] text-white/60">{[titleKind(title), minutes ? `${minutes} min` : null, `${moves.length} moves`].filter(Boolean).join(' · ')}</span>
             </>
           )}
+          </div>
         </div>
         {ring && (
           <Ring className="turn-in" size={72} stroke={5} of={ring.of} done={ring.done} now={day.kind === 'workout'} label={`${ring.done} of ${ring.of} workouts this week`}>
@@ -72,17 +91,39 @@ export function Today({ state, now, onStart, onRest, onCoach }: { state: Trainin
           </Ring>
         )}
       </div>
-      <WeekDots state={state} now={now} />
+      <WeekDots state={state} now={now} pick={peek?.date ?? today} onPick={(d) => setPick(d === today ? null : d)} />
       </div>
 
-      {line && (
+      {line && !peek && (
         <button type="button" onClick={onCoach} className="glass press mt-3 flex items-center gap-3 rounded-[20px] px-4 py-3.5 text-left">
           <span aria-hidden className="h-2 w-2 shrink-0 rounded-full bg-accent shadow-[0_0_8px_rgba(110,116,240,0.7)]" />
           <span className="text-[14px] leading-5 text-ink-soft">{line.text}</span>
         </button>
       )}
 
-      {!ahead && (
+      {peek ? (
+        peekList.length > 0 && (
+          <Glass key={peek.date} className="fade mt-3 flex flex-col px-5 py-1">
+            {rows(peekList).map((r, i) =>
+              r.q ? (
+                <button key={r.key} type="button" onClick={() => setOpen(r.q!)} className={`press flex items-center gap-3 py-2.5 text-left ${i ? 'border-t hairline' : ''}`}>
+                  <BodyDemo small move={r.q.move} name={r.q.name} className="h-[52px] w-[52px] rounded-[14px]" />
+                  <span className="min-w-0 flex-1 truncate text-[16px]">{r.name}</span>
+                  <span className="flex items-center gap-1.5">
+                    <span className="num text-[15px] text-ink-muted">{r.dose}</span>
+                    <ChevronRight size={16} strokeWidth={2} className="-mr-1 text-ink-faint" aria-hidden />
+                  </span>
+                </button>
+              ) : (
+                <div key={r.key} className={`flex items-center justify-between py-[11px] ${i ? 'border-t hairline' : ''}`}>
+                  <span className="text-[16px] text-ink-muted">{r.name}</span>
+                  <span className="num text-[15px] text-ink-muted">{r.dose}</span>
+                </div>
+              ),
+            )}
+          </Glass>
+        )
+      ) : !ahead && (
         <Glass className="mt-3 flex flex-col px-5 py-1">
           {rows(workout).map((r, i) =>
             r.q ? (
@@ -106,7 +147,11 @@ export function Today({ state, now, onStart, onRest, onCoach }: { state: Trainin
 
 
       <div className="mt-4 flex gap-3">
-        {going ? (
+        {peek ? (
+          <Button kind="glass" className="flex-1" onClick={() => setPick(null)}>
+            Back to today
+          </Button>
+        ) : going ? (
           <Button className="flex-1" onClick={onStart}>
             Continue · {setCount(state, workout).done}/{setCount(state, workout).of}
           </Button>
@@ -146,31 +191,42 @@ function rows(workout: WorkoutExercise[]): { key: string; name: string; dose: st
 }
 
 /** The week as seven days: a letter and a mark. Done is lit, a workout ahead is a ring, rest is a
-    dot, and today's letter is bright with the accent under it. */
-function WeekDots({ state, now }: { state: TrainingState; now: Date }) {
+    dot, and today's letter is bright with the accent under it. Each day is a tap: the hero shows
+    that day's workout, and a soft pill sits behind the day on show. */
+function WeekDots({ state, now, pick, onPick }: { state: TrainingState; now: Date; pick: string; onPick: (date: string) => void }) {
   const week = state.coach?.week;
   const today = dayKey(now);
   const slots = week ? weekSlots(week, 0) : [];
   if (!slots.length) return null;
   return (
-    <div className="relative mt-[84px] grid grid-cols-7 border-t border-white/10 pt-4" aria-label="This week">
-      {slots.map((s) => {
+    <div role="tablist" aria-label="This week" className="relative mt-[76px] grid grid-cols-7 border-t border-white/10 pt-3">
+      {slots.map((s, n) => {
         const done = !!s.day?.done;
         const isToday = s.date === today;
         const train = !!s.day;
+        const on = s.date === pick;
         return (
-          <div key={s.date} className="day-in flex flex-col items-center gap-2.5" style={{ animationDelay: `${260 + slots.indexOf(s) * 45}ms` }} title={weekdayOf(s.date)}>
-            <span className={`text-[12px] ${isToday ? 'font-medium text-ink' : 'text-white/45'}`}>{weekdayOf(s.date)[0]}</span>
+          <button
+            key={s.date}
+            type="button"
+            role="tab"
+            aria-selected={on}
+            aria-label={`${weekdayOf(s.date)}${isToday ? ', today' : ''}`}
+            onClick={() => onPick(s.date)}
+            className={`day-in press mx-auto flex w-10 flex-col items-center gap-2.5 rounded-[14px] py-2 transition-colors duration-300 ${on ? 'bg-white/[0.12] shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]' : ''}`}
+            style={{ animationDelay: `${260 + n * 45}ms` }}
+          >
+            <span className={`text-[12px] ${isToday || on ? 'font-medium text-ink' : 'text-white/45'}`}>{weekdayOf(s.date)[0]}</span>
             <span className="flex h-3.5 items-center">
               {done ? (
                 <span className="h-3.5 w-3.5 rounded-full bg-ink" />
               ) : train ? (
-                <span className={`h-3.5 w-3.5 rounded-full border-[1.5px] ${isToday ? 'border-accent shadow-[0_0_10px_rgba(110,116,240,0.7)]' : 'border-white/30'}`} />
+                <span className={`h-3.5 w-3.5 rounded-full border-[1.5px] ${isToday ? 'border-accent shadow-[0_0_10px_rgba(110,116,240,0.7)]' : on ? 'border-white/70' : 'border-white/30'}`} />
               ) : (
                 <span className={`h-1.5 w-1.5 rounded-full ${restKept(state, s.date) ? 'bg-white/40' : 'bg-white/[0.14]'}`} />
               )}
             </span>
-          </div>
+          </button>
         );
       })}
     </div>
