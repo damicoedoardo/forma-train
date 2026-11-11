@@ -22,11 +22,50 @@ async function gone(r: Response) {
 
 export { Offline };
 
+// The last friends list and feed this phone saw, so the Friends tab shows at once and refreshes
+// quietly, never "Loading". Kept in localStorage, dropped on sign-out (`forgetSocial`).
+
+const KEPT = 'forma-train-social-v1';
+type Kept = { friends?: FriendsList; feed?: { posts: Post[]; more: boolean } };
+let kept: Kept | null = null;
+
+function readKept(): Kept {
+  if (kept) return kept;
+  try {
+    kept = JSON.parse(localStorage.getItem(KEPT) ?? '{}') as Kept;
+  } catch {
+    kept = {};
+  }
+  return kept;
+}
+
+function keep<K extends keyof Kept>(k: K, v: NonNullable<Kept[K]>): NonNullable<Kept[K]> {
+  kept = { ...readKept(), [k]: v };
+  try {
+    localStorage.setItem(KEPT, JSON.stringify(kept));
+  } catch {
+    // Full or blocked: it is only kept in memory then.
+  }
+  return v;
+}
+
+export const keptFriends = () => (typeof window === 'undefined' ? null : (readKept().friends ?? null));
+export const keptFeed = () => (typeof window === 'undefined' ? null : (readKept().feed?.posts ?? null));
+
+export function forgetSocial() {
+  kept = {};
+  try {
+    localStorage.removeItem(KEPT);
+  } catch {
+    // Nothing kept.
+  }
+}
+
 // Friends
 
 /** Send your card; also the heartbeat that shows you online. */
 export const sendCard = async (card: Partial<MyCard>) => json<{ code: string; name: string }>(await api('PUT', '/me', card));
-export const getFriends = async () => json<FriendsList>(await api('GET', '/friends'));
+export const getFriends = async () => keep('friends', await json<FriendsList>(await api('GET', '/friends')));
 /** Add by code: "asked", or "friends" when they had asked you first. */
 export const addFriend = async (code: string) => json<{ status: 'asked' | 'friends'; name: string }>(await api('POST', '/friends', { code }));
 export const acceptFriend = async (id: string) => json<{ status: string }>(await api('POST', `/friends/${id}/accept`));
@@ -46,7 +85,10 @@ export const takeCheers = async () => json<{ cheers: Cheer[] }>(await api('POST'
 // Feed
 
 /** Yours and your friends' posts, newest first; `before` (a post's `at`) for the next page. */
-export const getFeed = async (before?: string) => json<{ posts: Post[]; more: boolean }>(await api('GET', `/feed${before ? `?before=${encodeURIComponent(before)}` : ''}`));
+export const getFeed = async (before?: string) => {
+  const r = await json<{ posts: Post[]; more: boolean }>(await api('GET', `/feed${before ? `?before=${encodeURIComponent(before)}` : ''}`));
+  return before ? r : keep('feed', r);
+};
 /** Share a finished workout, with a line and a photo (base64 JPEG from `shrinkPhoto`) if you like. */
 export const sharePost = async (workout: WorkoutCard, text: string, photo: string | null) => json<Post>(await api('POST', '/feed', { workout, text, ...(photo ? { photo } : {}) }));
 /** Give a post fire, or take yours back. */

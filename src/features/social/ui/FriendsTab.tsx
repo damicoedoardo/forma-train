@@ -7,7 +7,7 @@ import { cloudConfigured } from '@/platform/api';
 import { CHEER_LIMIT, cleanCheer, quickCheers } from '../cheers';
 import { cleanLine, FEED_LIMIT, type Post } from '../feed';
 import { inviteLink, showCode, statusOf, ago, type FriendCard, type FriendsList } from '../friends';
-import { acceptFriend, addFriend, commentPost, firePost, getFeed, getFriends, postPhotoUrl, profilePhotoUrl, removeFriend, sendCheer } from '../client';
+import { acceptFriend, addFriend, commentPost, firePost, getFeed, getFriends, keptFeed, keptFriends, postPhotoUrl, profilePhotoUrl, removeFriend, sendCheer } from '../client';
 
 /* The Friends tab: who is training now (cheer them on), your friends, adding one by code; and
    the feed of workouts friends shared. */
@@ -71,7 +71,8 @@ function FriendAvatar({ f, size }: { f: Pick<FriendCard, 'id' | 'name' | 'photo'
 }
 
 function Friends({ code }: { code: string | null }) {
-  const [list, setList] = useState<FriendsList | null>(null);
+  // The last list this phone saw shows at once; the fresh one replaces it quietly.
+  const [list, setList] = useState<FriendsList | null>(keptFriends);
   const [err, setErr] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
   const [cheering, setCheering] = useState<FriendCard | null>(null);
@@ -92,13 +93,13 @@ function Friends({ code }: { code: string | null }) {
     return () => window.clearInterval(t);
   }, [load]);
 
-  if (!list) return <span className="mt-8 px-1 text-[14px] text-ink-faint">{err ?? 'Loading…'}</span>;
+  if (!list) return err ? <span className="mt-8 px-1 text-[14px] text-ink-faint">{err}</span> : null;
   const training = list.friends.filter((f) => f.training);
   const rest = list.friends.filter((f) => !f.training);
   const myCode = code ?? list.me.code;
 
   return (
-    <div className="mt-7 flex flex-col gap-3">
+    <div className="mt-7 flex flex-1 flex-col gap-3">
       {training.map((f) => (
         <Glass key={f.id} className="flex items-center gap-3 px-4 py-3.5">
           <div className="relative">
@@ -139,7 +140,8 @@ function Friends({ code }: { code: string | null }) {
 
       {list.asks_out.length > 0 && <span className="px-1 text-[13px] text-ink-faint">Waiting on {list.asks_out.map((f) => f.name || 'a friend').join(', ')}</span>}
 
-      <button type="button" onClick={() => setAdding(true)} className="glass flex h-14 items-center justify-center gap-2 rounded-pill text-[15px]">
+      {/* At the foot of the screen, out of the way of the list. */}
+      <button type="button" onClick={() => setAdding(true)} className="glass press mt-auto flex h-14 shrink-0 items-center justify-center gap-2 rounded-pill text-[15px]">
         <UserPlus size={18} strokeWidth={1.8} aria-hidden /> Add a friend
       </button>
 
@@ -297,14 +299,14 @@ function FriendSheet({ f, onClose, onRemove }: { f: FriendCard; onClose: () => v
 }
 
 function Feed() {
-  const [posts, setPosts] = useState<Post[] | null>(null);
+  const [posts, setPosts] = useState<Post[] | null>(keptFeed);
   const [err, setErr] = useState<string | null>(null);
   useEffect(() => {
     getFeed()
       .then((r) => setPosts(r.posts))
       .catch((e: Error) => setErr(e.message));
   }, []);
-  if (!posts) return <span className="mt-8 px-1 text-[14px] text-ink-faint">{err ?? 'Loading…'}</span>;
+  if (!posts) return err ? <span className="mt-8 px-1 text-[14px] text-ink-faint">{err}</span> : null;
   if (!posts.length) return <Glass className="mt-7 px-5 py-5 text-[15px] text-ink-muted">Workouts you and your friends share show here.</Glass>;
   const put = (p: Post) => setPosts((all) => all?.map((x) => (x.id === p.id ? p : x)) ?? null);
   return (
