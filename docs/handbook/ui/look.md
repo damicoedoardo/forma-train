@@ -53,8 +53,8 @@ with tight tracking.
   A tap skips it; reduced motion makes it a short fade. Its motion lives in `globals.css` (`.intro-*`).
 - `Silk`: a ribbon of fine lines of light, blue to iris, drifting and twisting slowly on a
   canvas behind the hero. `calm` slows it. Stops when the tab is hidden; still under reduced motion.
-- `Weave`: the logo as a clock (the rest screen): its five parts draw in one after another as
-  `value` grows, until the mark is whole.
+- `Weave`: the logo as a clock (the rest screen): its five parts draw in one after another,
+  counter-clockwise like the opening screen, as `value` grows, until the mark is whole.
 - `TabBar`: floating glass pill, four icons (lucide), the open one lit.
 - `Screen`: a full screen with its glow, safe-area padding and room for the tab bar. `fit` locks it
   to the phone's height so nothing scrolls (the workout). `Label` is a

@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from 'react';
 
-/* The opening screen: on each launch the weave draws itself in, one part after another, in a
+/* The opening screen: on each launch the weave draws itself in counter-clockwise, one part after
+   the other, each coming out from under the one before (so a part starts only when the last has
+   landed), in a
    soft light; the name rises in under it; then it all lifts away to the app. Once a launch (kept
    in sessionStorage). A tap skips it; under reduced motion it is only a short fade. */
 
@@ -12,6 +14,8 @@ const at = (deg: number) => {
   return `${(50 + R * Math.cos(a)).toFixed(2)} ${(50 + R * Math.sin(a)).toFixed(2)}`;
 };
 const arc = (from: number, sweep: number) => `M${at(from)}A${R} ${R} 0 0 1 ${at(from + sweep)}`;
+/** The same arc, drawn from its far end back to its start (so it can be drawn in backwards). */
+const back = (from: number, sweep: number) => `M${at(from + sweep)}A${R} ${R} 0 0 0 ${at(from)}`;
 const PARTS = [0, 1, 2, 3, 4];
 const KEY = 'forma-intro';
 /** When it starts to lift away, and when it is gone (ms). */
@@ -57,7 +61,8 @@ export function Intro() {
               // A part is cut where the next one starts, so the next reads as lying over it.
               <mask key={i} id={`intro-${i}`} maskUnits="userSpaceOnUse" x="0" y="0" width="100" height="100">
                 <rect width="100" height="100" fill="#fff" />
-                <path d={arc(-126 + 72 * (i + 1), 20)} fill="none" stroke="#000" strokeWidth="18" strokeLinecap="round" />
+                {/* The first part drawn (4) is only tucked under once the last one (0) lands on it. */}
+                <path d={arc(-126 + 72 * (i + 1), 20)} className={i === 4 ? 'intro-cut' : undefined} fill="none" stroke="#000" strokeWidth="18" strokeLinecap="round" />
               </mask>
             ))}
           </defs>
@@ -65,10 +70,10 @@ export function Intro() {
             {PARTS.map((i) => (
               <g key={i} mask={`url(#intro-${i})`}>
                 <path
-                  d={arc(-126 + 72 * i, 76)}
+                  d={back(-126 + 72 * i, 76)}
                   pathLength={1}
                   className="intro-part"
-                  style={{ animationDelay: `${180 + (4 - i) * 130}ms` }}
+                  style={{ animationDelay: `${180 + (4 - i) * 250}ms` }}
                   fill="none"
                   stroke={i === 3 ? '#8C84F3' : '#ECECEF'}
                   strokeWidth="13"
