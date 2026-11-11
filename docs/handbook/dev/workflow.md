@@ -3,7 +3,7 @@ type: reference
 title: Workflow
 description: The commands (dev, test, typecheck, build, handbook), branches and PRs, and how Forma deploys.
 tags: [dev, workflow, git]
-timestamp: 2026-11-10
+timestamp: 2026-11-11
 ---
 
 # Workflow
@@ -21,3 +21,11 @@ timestamp: 2026-11-10
 - Deploys: the app goes on Vercel (project `forma-train`) from `main`. `vercel.json` names one
   service, the Next.js app, so Vercel does not try to run `backend/` too; the FastAPI backend
   goes on our server.
+- App updates: an installed app checks for a new deploy each time it is brought back
+  (`src/platform/pwa/ServiceWorker.tsx`) and reloads into it, right away if untouched, else once
+  hidden. The build name (`NEXT_PUBLIC_BUILD_ID` in `next.config.ts`) is a hash of the app's own
+  files (`src/`, `public/`, the configs and lockfile), not the commit, so a deploy that changes only
+  `backend/` or `docs/` keeps every file name the same and no open app reloads.
+- `src/platform/pwa/ViewportHeal.tsx` re-measures the screen after the iPhone keyboard closes. It
+  hides the page for one layout, which restarts every CSS animation, so it only runs after a field
+  or the keyboard was really up, never on a plain open.
