@@ -32,4 +32,8 @@ timestamp: 2026-11-11
   `backend/` or `docs/` keeps every file name the same and no open app reloads.
 - `src/platform/pwa/ViewportHeal.tsx` re-measures the screen after the iPhone keyboard closes. It
   hides the page for one layout, which restarts every CSS animation, so it only runs after a field
-  or the keyboard was really up, never on a plain open.
+  or the keyboard was really up, never on a plain open, and it puts each animation back where it
+  was (`keepAnimations`), so nothing plays again (that was the flash on closing the keyboard).
+- `src/platform/pwa/Keyboard.tsx` marks `<html data-keyboard>` while the keyboard is up and sets
+  `--vvh` / `--vvtop` (the room above it). The tab bar hides then, and a `.kb-fit` screen (the
+  Coach tab) shrinks to that room, so the chat's message bar sits right on the keyboard.

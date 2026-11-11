@@ -12,6 +12,10 @@ body { height: 100%; overflow-y: auto; -webkit-overflow-scrolling: touch; }
 * { scrollbar-width: none; -ms-overflow-style: none; }
 *::-webkit-scrollbar { display: none; width: 0; height: 0; }
 button, a, input { -webkit-tap-highlight-color: transparent; }
+/* The keyboard is up (platform/pwa/Keyboard.tsx): the tab bar steps aside, and a `.kb-fit` screen
+   shrinks to the room above the keyboard, so its bottom (the chat's message bar) sits right on it. */
+html[data-keyboard] .tabbar { display: none; }
+html[data-keyboard] .kb-fit { height: var(--vvh); top: var(--vvtop); padding-bottom: 8px !important; }
 ::selection { background: rgba(110, 116, 240, 0.35); }
 
 @layer components {

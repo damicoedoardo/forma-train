@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { ArrowUp, Check, Mic, X } from 'lucide-react';
 import { Button, Chip, Glass, Segmented } from '@/ui';
 import { CoachOrb } from '@/ui/CoachOrb';
@@ -37,7 +37,14 @@ export function CoachTab({ state, update, signedIn, now, onSignIn }: { state: Tr
           onChange={setView}
         />
       </div>
-      {view === 'week' ? <Week state={state} now={now} /> : <Chat state={state} update={update} signedIn={signedIn} now={now} onSignIn={onSignIn} onWeek={() => setView('week')} />}
+      {view === 'week' ? (
+        // The coach screen is locked to the phone's height (for the chat), so the week scrolls here.
+        <div className="-mx-4 min-h-0 flex-1 overflow-y-auto px-4">
+          <Week state={state} now={now} />
+        </div>
+      ) : (
+        <Chat state={state} update={update} signedIn={signedIn} now={now} onSignIn={onSignIn} onWeek={() => setView('week')} />
+      )}
     </>
   );
 }
@@ -45,7 +52,7 @@ export function CoachTab({ state, update, signedIn, now, onSignIn }: { state: Tr
 function Week({ state, now }: { state: TrainingState; now: Date }) {
   const week = state.coach?.week;
   const today = dayKey(now);
-  const tally = weekTally(week, now, sessionsThisWeek(state, now), WEEKLY_GOAL);
+  const tally = weekTally(week, now, sessionsThisWeek(state, now), state.coach?.profile?.days ?? WEEKLY_GOAL);
   const next = week ? daysIn(week, 1) : [];
   return (
     <>
@@ -102,7 +109,7 @@ function Chat({ state, update, signedIn: real, now, onSignIn, onWeek }: { state:
     el.style.height = 'auto';
     el.style.height = `${el.scrollHeight}px`;
   }, [text, talking]);
-  const end = useRef<HTMLDivElement>(null);
+  const list = useRef<HTMLDivElement>(null);
   const lines = shownChat(state.coach?.chat);
   const replies = state.coach?.replies ?? [];
   const week = state.coach?.week;
@@ -118,9 +125,18 @@ function Chat({ state, update, signedIn: real, now, onSignIn, onWeek }: { state:
     if (empty && signedIn) void send();
   }, [state, now, update, signedIn, send]);
 
+  // The newest line stays in sight: on a new line, and as the keyboard comes up. Only the list
+  // scrolls, never the page, so nothing jumps.
+  const toEnd = useCallback(() => {
+    const el = list.current;
+    if (el) el.scrollTop = el.scrollHeight;
+  }, []);
+  useEffect(toEnd, [lines.length, busy, toEnd]);
   useEffect(() => {
-    end.current?.scrollIntoView({ block: 'end' });
-  }, [lines.length, busy]);
+    const vv = window.visualViewport;
+    vv?.addEventListener('resize', toEnd);
+    return () => vv?.removeEventListener('resize', toEnd);
+  }, [toEnd]);
 
   const say = (t: string) => {
     const v = t.trim();
@@ -131,7 +147,7 @@ function Chat({ state, update, signedIn: real, now, onSignIn, onWeek }: { state:
 
   return (
     <>
-      <div className="mt-6 flex flex-1 flex-col gap-3 overflow-y-auto pb-4">
+      <div ref={list} className="mt-6 flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto pb-4">
         {lines.map((l) =>
           l.who === 'workout' ? (
             week ? (
@@ -178,7 +194,6 @@ function Chat({ state, update, signedIn: real, now, onSignIn, onWeek }: { state:
             )}
           </Glass>
         )}
-        <div ref={end} />
       </div>
 
       {signedIn && (
@@ -244,7 +259,8 @@ function Chat({ state, update, signedIn: real, now, onSignIn, onWeek }: { state:
                     <Mic size={20} strokeWidth={1.9} aria-hidden />
                   </button>
                 )}
-                <button type="submit" aria-label="Send" disabled={!text.trim() || busy || talking} className="flex h-11 w-11 shrink-0 items-center justify-center press btn-primary rounded-full text-base disabled:opacity-30">
+                {/* Tapping send keeps the focus in the box, so the keyboard stays up, like a chat app. */}
+                <button type="submit" aria-label="Send" onPointerDown={(e) => e.preventDefault()} disabled={!text.trim() || busy || talking} className="flex h-11 w-11 shrink-0 items-center justify-center press btn-primary rounded-full text-base disabled:opacity-30">
                   <ArrowUp size={18} strokeWidth={2.2} aria-hidden />
                 </button>
               </>

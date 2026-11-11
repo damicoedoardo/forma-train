@@ -78,7 +78,7 @@ export function shownWeek(week: CoachWeek | null | undefined, now: Date): 0 | 1 
 
 /** This week's tally, for the flame's dots: the workouts done of the workouts planned this week, so
     a 2-day week shows 2 dots and a 4-day week 4. With no week planned (or one run out), the
-    sessions this week (`sessions`) of the weekly goal (`goal`). */
+    sessions this week (`sessions`) of the weekly goal (`goal`: the days a week chosen at setup). */
 export function weekTally(week: CoachWeek | null | undefined, now: Date, sessions: number, goal: number): { done: number; goal: number } {
   const mine = week && !weekOver(week, now) ? daysIn(week, 0) : [];
   if (!mine.length) return { done: Math.min(sessions, goal), goal };

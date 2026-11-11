@@ -65,7 +65,8 @@ with tight tracking.
   then weave again. `talking`: whole, each part pushed out a little with the voice level.
   `listening`: whole, white parts dimmed, a slow breath. Leaving `thinking`, it finishes its weave
   and lands whole. Painted each frame by `requestAnimationFrame`; still under reduced motion.
-- `TabBar`: floating glass pill, four icons (lucide), the open one lit.
+- `TabBar`: floating glass pill, four icons (lucide), the open one lit. It steps aside while the
+  keyboard is up (`.tabbar`, `platform/pwa/Keyboard.tsx`).
 - `Screen`: a full screen with its glow, safe-area padding and room for the tab bar. `fit` locks it
   to the phone's height so nothing scrolls (the workout). `Label` is a
   small muted heading; `Chip` a small pill to tap (a quick reply, a setup choice).
