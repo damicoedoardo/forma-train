@@ -126,3 +126,7 @@ button, a, input { -webkit-tap-highlight-color: transparent; }
   .intro-part, .intro-light, .intro-letter, .intro-rule, .intro-cut { animation: none; stroke-dashoffset: 0; }
   .intro-glow { animation: none; opacity: 0; }
 }
+
+/* Dictation: the line that says the words are being written down breathes softly. */
+@keyframes writing { 0%, 100% { opacity: 0.45; } 50% { opacity: 1; } }
+.writing { animation: writing 1.4s ease-in-out infinite; }

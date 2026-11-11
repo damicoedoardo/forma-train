@@ -12,7 +12,7 @@ Next.js 16 (App Router), React 18, TypeScript strict, Tailwind 3, Vitest, pnpm. 
 the app (`src/app/page.tsx`); the save lives on the phone, with a cloud backup once signed in.
 
 ```
-src/app/         Routes: the app (page.tsx), layout, manifest, globals.css
+src/app/         Routes: the app (page.tsx), layout, manifest, globals.css, api/voice (dictation)
 src/ui/          The UI kit: Glass, Button, Segmented, Glow, TabBar, Screen, Stats, Avatar, Chip, Intro (the opening screen), Silk, Weave
 src/features/    One folder per feature (training, coach, exercises, social, account)
   <feature>/     Pure rules and types (*.ts), tested next to them (*.test.ts)

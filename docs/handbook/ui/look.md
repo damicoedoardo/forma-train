@@ -84,7 +84,7 @@ after, counts the week's workouts next to the title on Today (68px), and is the 
 The hero on Today moves a little more: a ribbon of light drifts through it (`Silk`), the week
 ring turns into place (`.turn-in`), and the days land one by one (`.day-in`). Everywhere else: quiet and short. A screen's parts rise in one after another (`.rise`, set by `Screen`, replayed
 when its `view` changes). The lit pill in `Segmented` and the lit circle in `TabBar` slide.
-Anything pressed gives a little (`.press`). A changed number pops (`.pop`). Sheets slide up
+Anything pressed gives a little (`.press`). A changed number pops (`.pop`). While dictation is written down, the line saying so breathes (`.writing`). Sheets slide up
 (`.sheet` over `.fade`). The glow breathes over nine seconds. A logged set gives a short buzz
 where the phone allows. A new best gets a moment: the number glows warm while you are ahead of
 last time, and once logged the rest ring pulses once (`.best-halo`, `.best-num`). The last three

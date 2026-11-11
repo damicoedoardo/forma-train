@@ -38,11 +38,14 @@ tools.
   keeps two weeks planned (`useCoachPlan`), lets the coach replan a due week on its own once
   signed in (`useCoachAutoPlan`), and runs the chat (`useCoachChat`). While the coach works, the
   chat shows a small `CoachOrb` weaving beside the current tool step.
-- **Mockup** (`ui/demo.ts`, `ui/Voice.tsx`): open the app with `?sandbox&demo` and the chat runs
-  on a made-up coach (`demoAsk`: a short script that calls real read-only tools, nothing sent to
-  the server). In it the main button of the message bar is a voice button while the bar is empty;
-  it opens `Voice`, a scripted voice exchange (listening, tool steps, talking, with captions).
-  No microphone or speech is wired yet.
+- **Dictation** (`ui/useDictation.ts`, `app/api/voice/transcribe/route.ts`): the mic in the
+  message bar records (a moving line of your voice and a timer, X to drop it, a tick to keep
+  it); the audio goes to the app's own server route, which asks Deepgram Nova-3 and sends back
+  the words. They land in the box after anything typed, to edit or send. The route needs
+  `DEEPGRAM_API_KEY` (else 503) and a signed-in caller once Supabase is set up; before that it
+  answers only with `VOICE_OPEN=1`. The box grows to five lines; Enter sends.
+- **Demo** (`ui/demo.ts`): open the app with `?sandbox&demo` and the chat runs on a made-up coach
+  (`demoAsk`: a short script that calls real read-only tools, nothing sent to the server).
 
 ## The voice
 
