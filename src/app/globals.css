@@ -5,6 +5,12 @@
 :root { color-scheme: dark; }
 html, body { background: #0D0E12; color: #ECECEF; }
 body { -webkit-tap-highlight-color: transparent; overscroll-behavior: none; }
+/* No scroll bars anywhere: things still scroll. The page scrolls inside the body (not the window),
+   because phones only let a page hide the bar of an element, not of the window itself. */
+html { height: 100%; overflow: hidden; }
+body { height: 100%; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+* { scrollbar-width: none; -ms-overflow-style: none; }
+*::-webkit-scrollbar { display: none; width: 0; height: 0; }
 button, a, input { -webkit-tap-highlight-color: transparent; }
 ::selection { background: rgba(110, 116, 240, 0.35); }
 
