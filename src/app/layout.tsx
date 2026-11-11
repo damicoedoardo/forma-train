@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import type { Metadata, Viewport } from 'next';
+import { Analytics } from '@/platform/pwa/Analytics';
 import { ServiceWorker } from '@/platform/pwa/ServiceWorker';
 import { ViewportHeal } from '@/platform/pwa/ViewportHeal';
 import { Intro } from '@/ui/Intro';
@@ -35,6 +36,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <Intro />
         <ServiceWorker />
         <ViewportHeal />
+        <Analytics />
       </body>
     </html>
   );

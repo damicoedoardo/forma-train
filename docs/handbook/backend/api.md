@@ -47,9 +47,14 @@ uv run ruff check . && uv run ruff format --check .
 
 ## Deploying
 
-`backend/deploy/` holds what the server needs; its `README.md` lists the steps. The api is one
-extra container (`compose.train.yml`, `forma_train_api`) on the game server's compose network
-(`forma_default`). It reuses the game's Postgres with its own `train` database (`setup-db.sql`),
-the game's LiteLLM with a `train-coach` model entry for the same DeepSeek model the game uses (`litellm-train.yaml`), and the game's Caddy
-with one more site block (`Caddyfile.train`). Settings go in `.env.train` from
-`env.train.example`. It is not live yet: the api domain and Supabase project are still open.
+Live at `https://api.formaquest.app` since 2026-11-11, on the server that hosted the FORMA
+game (the game is off; its database dump is in `/root/backups`). `backend/deploy/` holds the
+files and `README.md` the steps. The api is one container (`compose.train.yml`,
+`forma_train_api`, code in `/root/forma-train`) on the game's compose network
+(`forma_default`). It reuses the game's Postgres with its own `train` database
+(`setup-db.sql`), the game's LiteLLM with a `train-coach` entry for the same DeepSeek model the
+game used (`litellm-train.yaml`), and the game's Caddy, whose `api.formaquest.app` site now
+proxies to it (`Caddyfile.train` is the block for a fresh server). Settings are in `.env.train`
+(from `env.train.example`). Sign-in uses the game's Supabase project. Don't run
+`docker compose up -d` in `/root/forma`: Caddy there waits on the game api and would start it.
+To update: `git pull` in `/root/forma-train`, then the compose `up -d --build`.

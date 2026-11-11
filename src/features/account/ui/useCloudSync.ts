@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef } from 'react';
 import type { TrainingState } from '@/features/training/session';
+import { identify } from '@/platform/analytics';
 import { CLOUD_START, cloudConfigured, maybeSignedIn, Offline, supabase } from '@/platform/api';
 import { cloudState, plan, type CloudCopy } from '../cloud';
 import { getCloud, lastRev, putCloud, rememberRev, setCloudStatus } from '../client';
@@ -85,6 +86,7 @@ export function useCloudSync(state: TrainingState, update: (fn: (s: TrainingStat
         const was = user.current;
         user.current = id;
         setCloudStatus({ signedIn: !!id, email: session?.user.email ?? null, userId: id });
+        if (id !== was) identify(id);
         if (id && id !== was) {
           synced.current = null;
           void run(() => meet.current());
