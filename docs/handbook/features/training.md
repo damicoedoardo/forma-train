@@ -40,8 +40,7 @@ timestamp: 2026-11-11
   closes it.
 - **`ui/Workout.tsx`**: one exercise at a time: our animation of it, large and with no tile
   behind it (`BodyDemo bare`, as tall as the phone allows; a tap opens `ExercisePage`), its
-  name, the sets as short bars, a glass card with one thing to do and one to avoid (`guideFor`,
-  a new pair each set), the counter in a glass row with − and +, how it felt, Log set, then the rest
+  name, the sets as short bars, the counter in a glass row with − and +, how it felt, Log set, then the rest
   clock (with the next exercise and its small animation), which buzzes and chimes when it runs out (not when skipped). A set that beats your best
   shows "New best" over the rest clock. The screen stays on (`useWakeLock`). A friend's cheer
   shows on top. The close button offers finish now, pause, or drop. The

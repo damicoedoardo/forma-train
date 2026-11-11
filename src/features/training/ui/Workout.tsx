@@ -7,8 +7,6 @@ import { useNow } from '@/platform/useNow';
 import { useWakeLock } from '@/platform/useWakeLock';
 import { armChime, chime } from '@/platform/chime';
 import { videoOf, videoSearchUrl, videoWatchUrl } from '@/features/exercises/videos';
-import { loadLibrary } from '@/features/exercises/library';
-import { guideFor, type Guide } from '@/features/exercises/guide';
 import { anatomyFor } from '@/features/exercises/anatomy/body';
 import { clockStart, isTap, REST_SECONDS, todaysWorkout, type Rir, type TrainingState, type WorkoutExercise } from '../session';
 import { BodyDemo } from './BodyDemo';
@@ -16,8 +14,7 @@ import { ExercisePage } from './ExercisePage';
 import { beatsBest, clockText, currentIndex, FEEL, lastTime, logSet, restFor, setCount, setsOf, setsWanted, skipRest, startReps, undoSet } from '../workout';
 
 /* The workout: one exercise at a time. Our animation of it, large and bare on the screen's light
-   (a tap opens its page), its name, the sets as bars, one thing to do and one to avoid, the
-   counter, how it felt, Log set. A rest clock after
+   (a tap opens its page), its name, the sets as bars, the counter, how it felt, Log set. A rest clock after
    each set, with a buzz and a chime when it ends. A set that beats your best gets a moment. The
    screen stays on. A friend's cheer shows on top. */
 
@@ -48,22 +45,7 @@ export function Workout({ state, update, onFinish, onLeave, onDrop, cheer, onChe
   // The exercise's page, opened from its animation.
   const [page, setPage] = useState<WorkoutExercise | null>(null);
   const closePage = useCallback(() => setPage(null), []);
-  const [guide, setGuide] = useState<Guide | null>(null);
   useWakeLock();
-
-  // What to do and what to avoid for the exercise you are on.
-  useEffect(() => {
-    setGuide(null);
-    if (!q) return;
-    let live = true;
-    loadLibrary().then((all) => {
-      if (live) setGuide(guideFor(all, q));
-    });
-    return () => {
-      live = false;
-    };
-    // Only when the exercise changes.
-  }, [q?.id]);
 
   // A new exercise or set: the counter starts from where you are.
   const key = q ? `${q.id}:${setsOf(state, q.id).length}` : 'done';
@@ -129,13 +111,10 @@ export function Workout({ state, update, onFinish, onLeave, onDrop, cheer, onChe
   const unit = q?.unit === 'sec' ? 's' : '';
   const ahead = !!q && !isTap(q) && beatsBest(state, q.id, reps);
   const moves = !!q && !!anatomyFor(q.move, q.name);
-  // One thing to do and one to avoid, a new pair each set.
-  const tipDo = guide?.dos.length ? guide.dos[done % guide.dos.length] : null;
-  const tipNot = guide?.donts.length ? guide.donts[done % guide.donts.length] : null;
   // The animation is the screen's centerpiece, as tall as the phone allows; a tap opens the page.
   const demo = q && moves && (
     <button type="button" aria-label={`${q.name}: how to do it`} onClick={() => setPage(q)} className="press mt-1 block w-full">
-      <BodyDemo bare move={q.move} name={q.name} className="h-[clamp(120px,calc(100dvh-540px),320px)] w-full" />
+      <BodyDemo bare move={q.move} name={q.name} className="h-[clamp(120px,calc(100dvh-470px),360px)] w-full" />
     </button>
   );
 
@@ -218,24 +197,7 @@ export function Workout({ state, update, onFinish, onLeave, onDrop, cheer, onChe
                 </span>
               </div>
 
-              {(tipDo || tipNot) && (
-                <Glass className="mt-4 flex flex-col gap-2 rounded-[20px] px-4 py-3 text-[14px] leading-5">
-                  {tipDo && (
-                    <span className="flex items-start gap-3 text-ink-soft">
-                      <Check size={15} strokeWidth={2.25} aria-hidden className="mt-[3px] shrink-0 text-accent-iris" />
-                      {tipDo}
-                    </span>
-                  )}
-                  {tipNot && (
-                    <span className="flex items-start gap-3 text-ink-muted">
-                      <X size={15} strokeWidth={2.25} aria-hidden className="mt-[3px] shrink-0 text-ink-faint" />
-                      {tipNot}
-                    </span>
-                  )}
-                </Glass>
-              )}
-
-              <Glass className="mt-3 flex items-center justify-between rounded-[28px] p-2.5">
+              <Glass className="mt-5 flex items-center justify-between rounded-[28px] p-2.5">
                 <button type="button" aria-label="One less" onClick={() => setReps((r) => Math.max(0, r - (q.unit === 'sec' ? 5 : 1)))} className="press h-14 w-14 shrink-0 rounded-full bg-white/[0.07] text-[24px] text-ink-soft">
                   −
                 </button>
