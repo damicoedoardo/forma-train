@@ -7,6 +7,8 @@ const at = (deg: number) => {
   return `${(50 + R * Math.cos(a)).toFixed(2)} ${(50 + R * Math.sin(a)).toFixed(2)}`;
 };
 const arc = (from: number, sweep: number) => `M${at(from)}A${R} ${R} 0 0 1 ${at(from + sweep)}`;
+/** The same arc, drawn from its far end back to its start. */
+const back = (from: number, sweep: number) => `M${at(from + sweep)}A${R} ${R} 0 0 0 ${at(from)}`;
 const PARTS = [0, 1, 2, 3, 4];
 
 type Props = {
@@ -21,13 +23,14 @@ type Props = {
 };
 
 /** The Forma logo as a clock (the rest screen): the weave's five parts draw in one after another
-    as `value` grows, each tucking under the next, until the mark is whole. What it counts sits in
+    as `value` grows, counter-clockwise, each coming out from under the one before, until the mark is whole. What it counts sits in
     the middle. The faint whole mark shows behind from the start. */
 export function Weave({ size = 264, value, label, flash, children, className = '' }: Props) {
   const uid = useId().replace(/[^a-zA-Z0-9]/g, '');
   const v = Math.max(0, Math.min(1, value));
-  // How far each part is drawn, 0 to 1.
-  const drawn = PARTS.map((i) => Math.max(0, Math.min(1, v * 5 - i)));
+  // How far each part is drawn, 0 to 1. Like the opening screen, the weave builds counter-clockwise:
+  // the last part first, each one coming out from under the part before it.
+  const drawn = PARTS.map((i) => Math.max(0, Math.min(1, v * 5 - (4 - i))));
   return (
     <div role="img" aria-label={label} className={`relative shrink-0 ${className}`} style={{ width: `min(${size}px, 40dvh)`, height: `min(${size}px, 40dvh)` }}>
       {flash && <span aria-hidden className="best-halo pointer-events-none absolute inset-0 rounded-full" />}
@@ -48,10 +51,11 @@ export function Weave({ size = 264, value, label, flash, children, className = '
         ))}
         <g style={{ filter: 'drop-shadow(0 0 2.6px rgba(110,116,240,0.5))' }}>
           {PARTS.map((i) => (
-            // Tucked under the next part only once that part is there.
-            <g key={i} mask={drawn[(i + 1) % 5] > 0 ? `url(#${uid}-${i})` : undefined}>
+            // Tucked under the next part only once that part's head is there: always for the parts
+            // drawn after it, and for the first one drawn (4) when the last one (0) lands on it.
+            <g key={i} mask={(i === 4 ? drawn[0] >= 0.98 : drawn[i + 1] > 0) ? `url(#${uid}-${i})` : undefined}>
               <path
-                d={arc(-126 + 72 * i, 76)}
+                d={back(-126 + 72 * i, 76)}
                 className="ring-arc"
                 fill="none"
                 stroke={i === 3 ? '#8C84F3' : '#ECECEF'}
