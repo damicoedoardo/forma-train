@@ -1,0 +1,6 @@
+# Add to the game's Caddyfile, then reload Caddy. Caddy gets the certificate on its own once the
+# domain's DNS points at the server.
+{$TRAIN_API_DOMAIN:train-api.example.com} {
+	encode gzip
+	reverse_proxy forma_train_api:8000
+}

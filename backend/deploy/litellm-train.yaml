@@ -1,0 +1,7 @@
+# Add this entry under `model_list:` in the game's LiteLLM config, then restart LiteLLM.
+# The api always asks for `train-coach`; which real model answers is decided only here,
+# so switching models needs no deploy. Pick the model with Edoardo before going live.
+- model_name: train-coach
+  litellm_params:
+    model: openrouter/anthropic/<claude model>
+    api_key: os.environ/OPENROUTER_API_KEY

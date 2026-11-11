@@ -1,9 +1,9 @@
 ---
 type: reference
 title: API
-description: The FastAPI backend — every route, the Postgres tables, the TRAIN_ settings, the coach relay limits, and how to run and test it.
+description: The FastAPI backend — every route, the Postgres tables, the TRAIN_ settings, the coach relay limits, how to run and test it, and how it is deployed.
 tags: [backend, api, fastapi, postgres, coach, friends, feed]
-timestamp: 2026-11-02
+timestamp: 2026-11-11
 ---
 
 # API
@@ -33,7 +33,8 @@ The tables are in `backend/db/init.sql` and each store's `SCHEMA` (created on st
 Environment variables with the prefix `TRAIN_` (`app/config.py`): `TRAIN_DATABASE_URL`, the
 Supabase issuer and JWKS URL, `TRAIN_CORS_ORIGINS`, `TRAIN_LITELLM_URL` / `TRAIN_LITELLM_KEY`
 / `TRAIN_COACH_MODEL`, and the coach's daily caps (40 messages, 200 model calls). Keys live only
-in the server's `.env`.
+in the server's `.env.train`. CORS allows `localhost:3000`, `forma-train-one.vercel.app` and
+the Vercel previews; a custom app domain goes in `TRAIN_CORS_ORIGINS`.
 
 ## Running it
 
@@ -44,4 +45,11 @@ uv run pytest
 uv run ruff check . && uv run ruff format --check .
 ```
 
-The server and deploy are not set up yet; they will go on the machine that hosts the FORMA game.
+## Deploying
+
+`backend/deploy/` holds what the server needs; its `README.md` lists the steps. The api is one
+extra container (`compose.train.yml`, `forma_train_api`) on the game server's compose network
+(`forma_default`). It reuses the game's Postgres with its own `train` database (`setup-db.sql`),
+the game's LiteLLM with a `train-coach` model entry (`litellm-train.yaml`), and the game's Caddy
+with one more site block (`Caddyfile.train`). Settings go in `.env.train` from
+`env.train.example`. It is not live yet: the api domain and Supabase project are still open.
