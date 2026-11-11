@@ -56,6 +56,10 @@ with tight tracking.
   glow. Then the name rises in, a fine line, and it lifts away (about 3.5 s).
   `Intro.tsx` holds the timings (`ORDER`, `DUR`, `EASE`).
   A tap skips it; reduced motion makes it a short fade. Its motion lives in `globals.css` (`.intro-*`).
+  `IntroMark still` (with `IntroLight`) draws its last frame without motion. When an element
+  marked `data-intro-stay` is on the page (the sign-in), the opening hands over in place
+  instead of lifting away; `introShowing()` and the `INTRO_GONE` window event tell that screen
+  when to go on.
 - `Silk`: a ribbon of fine lines of light, blue to iris, drifting and twisting slowly on a
   canvas behind the hero. `calm` slows it. Stops when the tab is hidden; still under reduced motion.
 - `Weave`: the logo as a clock (the rest screen): its five parts draw in one after another,

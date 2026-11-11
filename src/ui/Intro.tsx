@@ -5,7 +5,9 @@ import { useEffect, useState } from 'react';
 /* The opening screen: on each launch the weave draws itself in counter-clockwise, one part after
    the other, each coming out from under the one before, at one even pace. The iris part lands
    last and a soft glow rises under it. Then the name rises in under it, and it all lifts away to the app. Once a launch
-   (kept in sessionStorage). A tap skips it; under reduced motion it is only a short fade. */
+   (kept in sessionStorage). A tap skips it; under reduced motion it is only a short fade.
+   When the screen under it shows the same still mark in the same place (inside an element marked
+   `data-intro-stay`: the sign-in), it doesn't lift away but hands over, and that screen goes on. */
 
 const R = 32;
 const at = (deg: number) => {
@@ -30,8 +32,19 @@ const LAND = START[4] + DUR[4];
 const LEAVE = LAND + 1150;
 const GONE = LEAVE + 650;
 
+/** Said on the window when the opening screen is gone. */
+export const INTRO_GONE = 'forma-intro-gone';
+let showing = false;
+/** The opening screen is still up. */
+export const introShowing = () => showing;
+
 export function Intro() {
   const [phase, setPhase] = useState<'on' | 'leaving' | 'gone'>('on');
+
+  useEffect(() => {
+    showing = phase !== 'gone';
+    if (!showing) window.dispatchEvent(new Event(INTRO_GONE));
+  }, [phase]);
 
   useEffect(() => {
     let seen = false;
@@ -46,7 +59,9 @@ export function Intro() {
       return;
     }
     const quick = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const a = window.setTimeout(() => setPhase('leaving'), quick ? 500 : LEAVE);
+    // The same mark waits under it: hand over in place instead of lifting away.
+    const leave = () => setPhase(document.querySelector('[data-intro-stay]') ? 'gone' : 'leaving');
+    const a = window.setTimeout(leave, quick ? 500 : LEAVE);
     const b = window.setTimeout(() => setPhase('gone'), quick ? 900 : GONE);
     return () => {
       window.clearTimeout(a);
@@ -61,58 +76,73 @@ export function Intro() {
       onClick={() => setPhase('gone')}
       className={`intro fixed inset-0 z-[100] flex flex-col items-center justify-center bg-base ${phase === 'leaving' ? 'intro-leave' : ''}`}
     >
-      <span className="intro-light pointer-events-none absolute left-1/2 top-1/2 h-[760px] w-[760px] -translate-x-1/2 -translate-y-1/2 rounded-full" />
+      <IntroLight />
       <div className="intro-lift relative flex flex-col items-center">
-        <svg width="96" height="96" viewBox="0 0 100 100" className="overflow-visible">
-          <defs>
-            {PARTS.map((i) => (
-              // A part is cut where the next one starts, so the next reads as lying over it.
-              <mask key={i} id={`intro-${i}`} maskUnits="userSpaceOnUse" x="0" y="0" width="100" height="100">
-                <rect width="100" height="100" fill="#fff" />
-                {/* The first part drawn is only tucked under once the last one lands on it. */}
-                <path
-                  d={arc(-126 + 72 * (i + 1), 20)}
-                  className={i === ORDER[0] ? 'intro-cut' : undefined}
-                  style={i === ORDER[0] ? { animationDelay: `${LAND - 60}ms` } : undefined}
-                  fill="none"
-                  stroke="#000"
-                  strokeWidth="18"
-                  strokeLinecap="round"
-                />
-              </mask>
-            ))}
-            <filter id="intro-blur" x="-50%" y="-50%" width="200%" height="200%">
-              <feGaussianBlur stdDeviation="5" />
-            </filter>
-          </defs>
-          {/* As the iris part lands, a soft glow rises under it. */}
-          <path className="intro-glow" style={{ animationDelay: `${LAND - 260}ms` }} d={arc(-126 + 72 * 3, 76)} fill="none" stroke="#8C84F3" strokeWidth="15" strokeLinecap="round" filter="url(#intro-blur)" />
-          <g style={{ filter: 'drop-shadow(0 0 6px rgba(140,132,243,0.45))' }}>
-            {PARTS.map((i) => (
-              <g key={i} mask={`url(#intro-${i})`}>
-                <path
-                  d={back(-126 + 72 * i, 76)}
-                  pathLength={1}
-                  className="intro-part"
-                  style={{ animationDelay: `${START[ORDER.indexOf(i)]}ms`, animationDuration: `${DUR[ORDER.indexOf(i)]}ms`, animationTimingFunction: EASE[ORDER.indexOf(i)] }}
-                  fill="none"
-                  stroke={i === 3 ? '#8C84F3' : '#ECECEF'}
-                  strokeWidth="13"
-                  strokeLinecap="round"
-                />
-              </g>
-            ))}
-          </g>
-        </svg>
-        <span className="mt-7 flex font-display text-[30px] font-medium tracking-[-0.8px] text-ink">
-          {'Forma'.split('').map((c, i) => (
-            <span key={i} className="intro-letter" style={{ animationDelay: `${LAND + 60 + i * 55}ms` }}>
-              {c}
-            </span>
-          ))}
-        </span>
-        <span className="intro-rule mt-5 h-px w-16" style={{ animationDelay: `${LAND + 420}ms` }} />
+        <IntroMark />
       </div>
     </div>
+  );
+}
+
+/** The soft light behind the mark. */
+export function IntroLight({ still = false }: { still?: boolean }) {
+  return <span className="intro-light pointer-events-none absolute left-1/2 top-1/2 h-[760px] w-[760px] -translate-x-1/2 -translate-y-1/2 rounded-full" style={still ? { animation: 'none' } : undefined} />;
+}
+
+/** The opening screen's mark, name and line. `still` draws its last frame, with no motion. */
+export function IntroMark({ still = false }: { still?: boolean }) {
+  const k = still ? 's' : 'a';
+  return (
+    <>
+      <svg width="96" height="96" viewBox="0 0 100 100" className="overflow-visible">
+        <defs>
+          {PARTS.map((i) => (
+            // A part is cut where the next one starts, so the next reads as lying over it.
+            <mask key={i} id={`intro-${k}${i}`} maskUnits="userSpaceOnUse" x="0" y="0" width="100" height="100">
+              <rect width="100" height="100" fill="#fff" />
+              {/* The first part drawn is only tucked under once the last one lands on it. */}
+              <path
+                d={arc(-126 + 72 * (i + 1), 20)}
+                className={i === ORDER[0] && !still ? 'intro-cut' : undefined}
+                style={i === ORDER[0] && !still ? { animationDelay: `${LAND - 60}ms` } : undefined}
+                fill="none"
+                stroke="#000"
+                strokeWidth="18"
+                strokeLinecap="round"
+              />
+            </mask>
+          ))}
+          <filter id={`intro-blur-${k}`} x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="5" />
+          </filter>
+        </defs>
+        {/* As the iris part lands, a soft glow rises under it. */}
+        <path className={still ? undefined : 'intro-glow'} style={still ? { opacity: 0.45 } : { animationDelay: `${LAND - 260}ms` }} d={arc(-126 + 72 * 3, 76)} fill="none" stroke="#8C84F3" strokeWidth="15" strokeLinecap="round" filter={`url(#intro-blur-${k})`} />
+        <g style={{ filter: 'drop-shadow(0 0 6px rgba(140,132,243,0.45))' }}>
+          {PARTS.map((i) => (
+            <g key={i} mask={`url(#intro-${k}${i})`}>
+              <path
+                d={back(-126 + 72 * i, 76)}
+                pathLength={1}
+                className={still ? undefined : 'intro-part'}
+                style={still ? undefined : { animationDelay: `${START[ORDER.indexOf(i)]}ms`, animationDuration: `${DUR[ORDER.indexOf(i)]}ms`, animationTimingFunction: EASE[ORDER.indexOf(i)] }}
+                fill="none"
+                stroke={i === 3 ? '#8C84F3' : '#ECECEF'}
+                strokeWidth="13"
+                strokeLinecap="round"
+              />
+            </g>
+          ))}
+        </g>
+      </svg>
+      <span className="mt-7 flex font-display text-[30px] font-medium tracking-[-0.8px] text-ink">
+        {'Forma'.split('').map((c, i) => (
+          <span key={i} className={still ? undefined : 'intro-letter'} style={still ? undefined : { animationDelay: `${LAND + 60 + i * 55}ms` }}>
+            {c}
+          </span>
+        ))}
+      </span>
+      <span className="intro-rule mt-5 h-px w-16" style={still ? { animation: 'none' } : { animationDelay: `${LAND + 420}ms` }} />
+    </>
   );
 }

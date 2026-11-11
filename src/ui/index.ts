@@ -13,5 +13,5 @@ export { Screen, Label, Chip } from './Screen';
 export { Ring } from './Ring';
 export { Weave } from './Weave';
 export { Silk } from './Silk';
-export { Intro } from './Intro';
+export { Intro, IntroLight, IntroMark, introShowing, INTRO_GONE } from './Intro';
 export { Layer } from './Layer';

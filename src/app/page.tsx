@@ -25,8 +25,12 @@ import { FriendsTab } from '@/features/social/ui/FriendsTab';
 import { useCloudSync } from '@/features/account/ui/useCloudSync';
 import { useCloudStatus } from '@/features/account/ui/useCloudStatus';
 import { YouTab } from '@/features/account/ui/YouTab';
+import { useDoor } from '@/features/account/ui/useDoor';
+import { Install } from '@/features/account/ui/Install';
+import { Welcome } from '@/features/account/ui/Welcome';
 
-/* The app: one page. The first open asks six questions; then the four tabs, the workout over
+/* The app: one page. In a browser it first asks to be put on the Home Screen; installed, it opens
+   on the sign-in until signed in. The first open asks six questions; then the four tabs, the workout over
    them while one is open, and the screen after it. */
 
 interface Finished {
@@ -43,6 +47,7 @@ export default function Home() {
   const [after, setAfter] = useState<Finished | null>(null);
   const [redo, setRedo] = useState(false);
   const { signedIn } = useCloudStatus();
+  const entry = useDoor(inSandbox());
   const training = state.draft?.open ? trainingLabel(state) : null;
   const social = useSocial(state, signedIn, training);
 
@@ -79,7 +84,9 @@ export default function Home() {
     setTab('today');
   }, [state, update]);
 
-  if (!ready) return <main className="min-h-[100dvh] bg-base" />;
+  if (!ready || !entry.door) return <main className="min-h-[100dvh] bg-base" />;
+  if (entry.door === 'install') return <Install onBrowser={entry.goOnInBrowser} />;
+  if (entry.door === 'sign-in') return <Welcome busy={entry.busy} />;
   if (!state.profile.onboarded || redo)
     return (
       <Setup
