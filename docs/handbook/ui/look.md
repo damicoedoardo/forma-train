@@ -57,7 +57,8 @@ with tight tracking.
   canvas behind the hero. `calm` slows it. Stops when the tab is hidden; still under reduced motion.
 - `Weave`: the logo as a clock (the rest screen): its five parts draw in one after another,
   counter-clockwise and ending on the iris part like the opening screen, as `value` grows, until the mark is whole.
-- `TabBar`: floating glass pill, four icons (lucide), the open one lit.
+- `TabBar`: floating glass pill, four icons (lucide), the open one lit. It sits low: 12px from the
+  bottom, or just above the home bar on phones that have one.
 - `Screen`: a full screen with its glow, safe-area padding and room for the tab bar. `fit` locks it
   to the phone's height so nothing scrolls (the workout). `Label` is a
   small muted heading; `Chip` a small pill to tap (a quick reply, a setup choice).
