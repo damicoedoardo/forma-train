@@ -8,6 +8,18 @@ from typing import Any, Protocol
 
 from app.db import get_pool
 
+# Run on every start; safe to run again. The same table is in db/init.sql.
+SCHEMA = """
+CREATE TABLE IF NOT EXISTS saves (
+    user_id     uuid PRIMARY KEY,
+    data        jsonb NOT NULL,
+    version     integer NOT NULL,
+    workouts    integer NOT NULL DEFAULT 0,
+    rev         integer NOT NULL DEFAULT 1,
+    updated_at  timestamptz NOT NULL DEFAULT now()
+);
+"""
+
 
 @dataclass(frozen=True)
 class SaveRow:
@@ -19,6 +31,8 @@ class SaveRow:
 
 
 class SaveStore(Protocol):
+    async def ensure(self) -> None: ...
+
     async def get(self, user_id: str) -> SaveRow | None: ...
 
     async def put(
@@ -43,6 +57,10 @@ def _row(r: Any) -> SaveRow:
 
 
 class PgStore:
+    async def ensure(self) -> None:
+        async with get_pool().acquire() as c:
+            await c.execute(SCHEMA)
+
     async def get(self, user_id: str) -> SaveRow | None:
         r = await get_pool().fetchrow(
             "SELECT rev, version, workouts, updated_at, data FROM saves WHERE user_id = $1",
@@ -89,6 +107,9 @@ class MemoryStore:
 
     def __init__(self) -> None:
         self.rows: dict[str, SaveRow] = {}
+
+    async def ensure(self) -> None:
+        return None
 
     async def get(self, user_id: str) -> SaveRow | None:
         return self.rows.get(user_id)
