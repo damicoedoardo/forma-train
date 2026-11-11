@@ -54,3 +54,17 @@ describe('anatomy demos', () => {
     }
   });
 });
+
+describe('the rich look', () => {
+  it('draws every exercise with a lit body, and the far end of a move behind it', () => {
+    for (const ex of ANATOMY_DEMOS) {
+      const s = scene(ex, 'side', 0.3, { rich: true });
+      for (const p of s.shapes) expect(p.d).not.toMatch(/NaN|Infinity/);
+      expect(s.shapes.some((p) => p.fill === 'url(#fm-skin)')).toBe(true);
+      expect(s.viewBox).toBe(scene(ex, 'side', 0).viewBox);
+    }
+    expect(scene('squat', 'side', 0.3, { rich: true }).shapes.some((p) => p.kind === 'ghost')).toBe(true);
+    // The plain look is left as it was.
+    expect(scene('squat', 'side', 0.3).shapes.every((p) => !p.kind)).toBe(true);
+  });
+});

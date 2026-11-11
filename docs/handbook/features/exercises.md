@@ -25,7 +25,12 @@ timestamp: 2026-11-11
   iris). `anatomyFor(move, name)` picks the demo for an exercise (147 demos, about 880 of the
   890 exercises); `scene(id, view, t)` gives the SVG paths for a moment of the rep. Pure
   geometry (`skeleton.ts`, `keys.ts`, `moves.ts`, `body.ts`); colors are `INK` in `body.ts`.
-  `features/training/ui/BodyDemo.tsx` plays it.
+  `scene(…, { rich: true })` is the look the app uses for every demo: skin lit from above
+  (`INK_RICH`, gradients named `fm-skin`, `fm-far`, `fm-floor` that the player defines), no
+  arrow, a slow way down and a quicker way back, worked muscles that brighten with the effort,
+  and extra shapes marked `kind`: `ghost` (the body at the far end of the move), `shadow`
+  (on the floor) and `glow` (over a working muscle). `features/training/ui/BodyDemo.tsx`
+  plays it.
 
 Tests (`library.test.ts`, `videos.test.ts`) check every id resolves and every video points at a
 real exercise.
