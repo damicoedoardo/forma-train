@@ -29,9 +29,9 @@ export function Weave({ size = 264, value, label, flash, children, className = '
   // How far each part is drawn, 0 to 1.
   const drawn = PARTS.map((i) => Math.max(0, Math.min(1, v * 5 - i)));
   return (
-    <div role="img" aria-label={label} className={`relative shrink-0 ${className}`} style={{ width: size, height: size }}>
+    <div role="img" aria-label={label} className={`relative shrink-0 ${className}`} style={{ width: `min(${size}px, 40dvh)`, height: `min(${size}px, 40dvh)` }}>
       {flash && <span aria-hidden className="best-halo pointer-events-none absolute inset-0 rounded-full" />}
-      <svg width={size} height={size} viewBox="0 0 100 100" className="overflow-visible" aria-hidden>
+      <svg viewBox="0 0 100 100" className="h-full w-full overflow-visible" aria-hidden>
         <defs>
           {PARTS.map((i) => (
             // A part is cut where the next one starts, so the next reads as lying over it.

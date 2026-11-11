@@ -39,7 +39,8 @@ timestamp: 2026-11-11
   Avoid (`guideFor` in `features/exercises/guide.ts`). It covers the screen; the phone's back
   closes it.
 - **`ui/Workout.tsx`**: one exercise at a time: our animation of it, large and with no tile
-  behind it (`BodyDemo bare`, as tall as the phone allows) with a "How to" chip on its corner
+  behind it (`BodyDemo bare`; the screen is locked to the phone's height with `Screen fit` and never
+  scrolls, so the animation takes the room the rest leaves) with a "How to" chip on its corner
   (either opens `ExercisePage`; with no animation the chip sits under the name), its
   name, the sets as short bars, the counter in a glass row with − and +, how it felt, Log set, then the rest
   clock in the middle of the screen (`Weave`: the logo weaving in as you recover, with the next

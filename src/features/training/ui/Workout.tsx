@@ -116,17 +116,17 @@ export function Workout({ state, update, onFinish, onLeave, onDrop, cheer, onChe
       How to
     </span>
   );
-  // The animation is the screen's centerpiece, as tall as the phone allows. It and its "How to"
+  // The screen never scrolls: the animation, its centerpiece, takes the room the rest leaves. It and its "How to"
   // chip open the page; with no animation the chip stands alone under the name.
   const demo = q && moves && (
-    <button type="button" aria-label={`How to do ${q.name}`} onClick={() => setPage(q)} className="press relative mt-1 block w-full">
-      <BodyDemo bare move={q.move} name={q.name} className="h-[clamp(120px,calc(100dvh-470px),360px)] w-full" />
+    <button type="button" aria-label={`How to do ${q.name}`} onClick={() => setPage(q)} className="press relative mt-1 block max-h-[440px] min-h-0 w-full flex-1">
+      <BodyDemo bare move={q.move} name={q.name} className="absolute inset-0 h-full w-full" />
       <span className="absolute bottom-1 right-0">{howTo}</span>
     </button>
   );
 
   return (
-    <Screen tabs={false} glow="left-[-15px] top-[120px]" mood={restLeft > 0 ? 'rest' : 'work'} view={restLeft > 0 ? 'rest' : (q?.id ?? 'end')}>
+    <Screen fit tabs={false} glow="left-[-15px] top-[120px]" mood={restLeft > 0 ? 'rest' : 'work'} view={restLeft > 0 ? 'rest' : (q?.id ?? 'end')}>
       <div className="flex items-center justify-between">
         <button type="button" aria-label="Close workout" onClick={() => setMenu(true)} className="glass press flex h-11 w-11 items-center justify-center rounded-full">
           <X size={18} strokeWidth={2} aria-hidden />
@@ -227,7 +227,7 @@ export function Workout({ state, update, onFinish, onLeave, onDrop, cheer, onChe
             </>
           )}
 
-          <div className="mt-auto flex gap-3 pt-6">
+          <div className="mt-auto flex shrink-0 gap-3 pt-5">
             {prev && (
               <button type="button" aria-label="Take back the last set" onClick={() => update((s) => undoSet(s, prev.id))} className="glass press flex h-14 w-14 shrink-0 items-center justify-center rounded-full">
                 <Undo2 size={18} strokeWidth={2} aria-hidden />
