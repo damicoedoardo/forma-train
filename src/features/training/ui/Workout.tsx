@@ -1,12 +1,11 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Check, Play, Undo2, X } from 'lucide-react';
+import { Check, CirclePlay, Undo2, X } from 'lucide-react';
 import { Avatar, Button, Glass, Ring, Screen, Segmented } from '@/ui';
 import { useNow } from '@/platform/useNow';
 import { useWakeLock } from '@/platform/useWakeLock';
 import { armChime, chime } from '@/platform/chime';
-import { videoOf, videoSearchUrl, videoWatchUrl } from '@/features/exercises/videos';
 import { anatomyFor } from '@/features/exercises/anatomy/body';
 import { clockStart, isTap, REST_SECONDS, todaysWorkout, type Rir, type TrainingState, type WorkoutExercise } from '../session';
 import { BodyDemo } from './BodyDemo';
@@ -105,16 +104,24 @@ export function Workout({ state, update, onFinish, onLeave, onDrop, cheer, onChe
     for (let i = (at < 0 ? workout.length : at) - 1; i >= 0; i--) if (setsOf(state, workout[i].id).length) return workout[i];
     return q && setsOf(state, q.id).length ? q : null;
   })();
-  const howTo = q ? videoOf(q.id) : null;
   const done = q ? setsOf(state, q.id).length : 0;
   const last = q ? lastTime(state, q.id) : null;
   const unit = q?.unit === 'sec' ? 's' : '';
   const ahead = !!q && !isTap(q) && beatsBest(state, q.id, reps);
   const moves = !!q && !!anatomyFor(q.move, q.name);
-  // The animation is the screen's centerpiece, as tall as the phone allows; a tap opens the page.
+  // "How to": opens the exercise's page (the video, what to do, what to avoid).
+  const howTo = (
+    <span className="glass flex h-9 items-center gap-1.5 rounded-pill pl-2.5 pr-3.5 text-[13px] text-ink-soft">
+      <CirclePlay size={16} strokeWidth={1.75} aria-hidden />
+      How to
+    </span>
+  );
+  // The animation is the screen's centerpiece, as tall as the phone allows. It and its "How to"
+  // chip open the page; with no animation the chip stands alone under the name.
   const demo = q && moves && (
-    <button type="button" aria-label={`${q.name}: how to do it`} onClick={() => setPage(q)} className="press mt-1 block w-full">
+    <button type="button" aria-label={`How to do ${q.name}`} onClick={() => setPage(q)} className="press relative mt-1 block w-full">
       <BodyDemo bare move={q.move} name={q.name} className="h-[clamp(120px,calc(100dvh-470px),360px)] w-full" />
+      <span className="absolute bottom-1 right-0">{howTo}</span>
     </button>
   );
 
@@ -125,13 +132,7 @@ export function Workout({ state, update, onFinish, onLeave, onDrop, cheer, onChe
           <X size={18} strokeWidth={2} aria-hidden />
         </button>
         <span className="text-[15px] tabular-nums text-ink-muted">{clock}</span>
-        {q ? (
-          <a href={howTo ? videoWatchUrl(howTo.id) : videoSearchUrl(q.name)} target="_blank" rel="noreferrer" aria-label="How to do it" className="glass press flex h-11 w-11 items-center justify-center rounded-full">
-            <Play size={16} fill="currentColor" strokeWidth={0} aria-hidden />
-          </a>
-        ) : (
-          <span className="w-11" />
-        )}
+        <span className="w-11" />
       </div>
 
       {cheer && (
@@ -172,6 +173,11 @@ export function Workout({ state, update, onFinish, onLeave, onDrop, cheer, onChe
         <>
           {demo}
           <h1 className={`${moves ? 'mt-1' : 'mt-12'} text-center font-display text-[26px] font-medium leading-8 tracking-[-0.5px]`}>{q.name}</h1>
+          {!moves && (
+            <button type="button" aria-label={`How to do ${q.name}`} onClick={() => setPage(q)} className="press mx-auto mt-3">
+              {howTo}
+            </button>
+          )}
 
           {isTap(q) ? (
             <div className="mt-5 flex flex-col items-center gap-5 px-4 text-center">

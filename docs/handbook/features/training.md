@@ -39,7 +39,8 @@ timestamp: 2026-11-11
   Avoid (`guideFor` in `features/exercises/guide.ts`). It covers the screen; the phone's back
   closes it.
 - **`ui/Workout.tsx`**: one exercise at a time: our animation of it, large and with no tile
-  behind it (`BodyDemo bare`, as tall as the phone allows; a tap opens `ExercisePage`), its
+  behind it (`BodyDemo bare`, as tall as the phone allows) with a "How to" chip on its corner
+  (either opens `ExercisePage`; with no animation the chip sits under the name), its
   name, the sets as short bars, the counter in a glass row with − and +, how it felt, Log set, then the rest
   clock (with the next exercise and its small animation), which buzzes and chimes when it runs out (not when skipped). A set that beats your best
   shows "New best" over the rest clock. The screen stays on (`useWakeLock`). A friend's cheer
