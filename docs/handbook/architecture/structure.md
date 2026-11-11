@@ -18,7 +18,7 @@ src/ui/          The UI kit: Glass, Button, Segmented, Glow, TabBar, Screen, Sta
 src/features/    One folder per feature (training, coach, exercises, social, account)
   <feature>/     Pure rules and types (*.ts), tested next to them (*.test.ts)
   <feature>/ui/  That feature's screens and hooks (React)
-src/platform/    Shared plumbing: the store, the api client, random, the ticking clock (useNow), the screen wake lock (useWakeLock), the chime, analytics (PostHog), pwa/ (the service worker and update check, the fix for the iPhone keyboard, and Keyboard: where the keyboard is, for the chat bar)
+src/platform/    Shared plumbing: the store, the api client, random, the ticking clock (useNow), the screen wake lock (useWakeLock), the chime, analytics (PostHog), pwa/ (the service worker and update check, the fix for the iPhone keyboard, and Keyboard: where the keyboard is, so the tab bar hides and the chat bar sits on it)
 backend/         FastAPI on our server: login check, backup, coach relay, social
 scripts/         Node tools: the handbook check
 public/          Service worker, icons (weave-*.png; the manifest is src/app/manifest.ts), email/ (the sign-in email's picture)
