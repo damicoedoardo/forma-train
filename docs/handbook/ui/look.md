@@ -49,12 +49,14 @@ with tight tracking.
 - `Mark`: the weave (five parts of a ring, each tucked under the next, one in iris) and the
   name "Forma", top left on Today.
 - `Intro` (mounted in `app/layout.tsx`): the opening screen, once a launch. The weave draws in counter-clockwise,
-  each part coming out from under the one before, in a soft iris light, the name rises in, a fine line, then it lifts away (about 3 s).
+  each part coming out from under the one before and faster than the last, ending on the iris part: light runs
+  along it, it glows, a fine ring opens out. Then the name rises in, a fine line, and it lifts away (about 3.5 s).
+  `Intro.tsx` holds the timings (`ORDER`, `DUR`, `EASE`).
   A tap skips it; reduced motion makes it a short fade. Its motion lives in `globals.css` (`.intro-*`).
 - `Silk`: a ribbon of fine lines of light, blue to iris, drifting and twisting slowly on a
   canvas behind the hero. `calm` slows it. Stops when the tab is hidden; still under reduced motion.
 - `Weave`: the logo as a clock (the rest screen): its five parts draw in one after another,
-  counter-clockwise like the opening screen, as `value` grows, until the mark is whole.
+  counter-clockwise and ending on the iris part like the opening screen, as `value` grows, until the mark is whole.
 - `TabBar`: floating glass pill, four icons (lucide), the open one lit.
 - `Screen`: a full screen with its glow, safe-area padding and room for the tab bar. `fit` locks it
   to the phone's height so nothing scrolls (the workout). `Label` is a
