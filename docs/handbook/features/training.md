@@ -38,8 +38,10 @@ timestamp: 2026-11-11
   with the muscles it works, then Do and
   Avoid (`guideFor` in `features/exercises/guide.ts`). It covers the screen; the phone's back
   closes it.
-- **`ui/Workout.tsx`**: one exercise at a time: the counter, how it felt, Log set, then the rest
-  clock, which buzzes and chimes when it runs out (not when skipped). A set that beats your best
+- **`ui/Workout.tsx`**: one exercise at a time: our animation of it on top (`BodyDemo`, as tall
+  as the phone allows; a tap opens `ExercisePage`), one thing to do and one to avoid
+  (`guideFor`, a new pair each set), the counter, how it felt, Log set, then the rest
+  clock (with the next exercise and its small animation), which buzzes and chimes when it runs out (not when skipped). A set that beats your best
   shows "New best" over the rest clock. The screen stays on (`useWakeLock`). A friend's cheer
   shows on top. The close button offers finish now, pause, or drop. The
   last set finishes the workout.

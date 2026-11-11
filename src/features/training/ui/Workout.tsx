@@ -1,16 +1,22 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Check, Play, Undo2, X } from 'lucide-react';
 import { Avatar, Button, Glass, Ring, Screen, Segmented } from '@/ui';
 import { useNow } from '@/platform/useNow';
 import { useWakeLock } from '@/platform/useWakeLock';
 import { armChime, chime } from '@/platform/chime';
 import { videoOf, videoSearchUrl, videoWatchUrl } from '@/features/exercises/videos';
-import { clockStart, isTap, REST_SECONDS, todaysWorkout, type Rir, type TrainingState } from '../session';
+import { loadLibrary } from '@/features/exercises/library';
+import { guideFor, type Guide } from '@/features/exercises/guide';
+import { anatomyFor } from '@/features/exercises/anatomy/body';
+import { clockStart, isTap, REST_SECONDS, todaysWorkout, type Rir, type TrainingState, type WorkoutExercise } from '../session';
+import { BodyDemo } from './BodyDemo';
+import { ExercisePage } from './ExercisePage';
 import { beatsBest, clockText, currentIndex, FEEL, lastTime, logSet, restFor, setCount, setsOf, setsWanted, skipRest, startReps, undoSet } from '../workout';
 
-/* The workout: one exercise at a time, a big counter, how it felt, Log set. A rest clock after
+/* The workout: one exercise at a time. Our animation of it on top (a tap opens its page), one
+   thing to do and one to avoid, the counter, how it felt, Log set. A rest clock after
    each set, with a buzz and a chime when it ends. A set that beats your best gets a moment. The
    screen stays on. A friend's cheer shows on top. */
 
@@ -38,7 +44,25 @@ export function Workout({ state, update, onFinish, onLeave, onDrop, cheer, onChe
   // The set just logged beat your best: its reps, shown over the rest clock.
   const [best, setBest] = useState<number | null>(null);
   const resting = useRef(false);
+  // The exercise's page, opened from its animation.
+  const [page, setPage] = useState<WorkoutExercise | null>(null);
+  const closePage = useCallback(() => setPage(null), []);
+  const [guide, setGuide] = useState<Guide | null>(null);
   useWakeLock();
+
+  // What to do and what to avoid for the exercise you are on.
+  useEffect(() => {
+    setGuide(null);
+    if (!q) return;
+    let live = true;
+    loadLibrary().then((all) => {
+      if (live) setGuide(guideFor(all, q));
+    });
+    return () => {
+      live = false;
+    };
+    // Only when the exercise changes.
+  }, [q?.id]);
 
   // A new exercise or set: the counter starts from where you are.
   const key = q ? `${q.id}:${setsOf(state, q.id).length}` : 'done';
@@ -103,6 +127,15 @@ export function Workout({ state, update, onFinish, onLeave, onDrop, cheer, onChe
   const last = q ? lastTime(state, q.id) : null;
   const unit = q?.unit === 'sec' ? 's' : '';
   const ahead = !!q && !isTap(q) && beatsBest(state, q.id, reps);
+  const moves = !!q && !!anatomyFor(q.move, q.name);
+  // One thing to do and one to avoid, a new pair each set.
+  const tipDo = guide?.dos.length ? guide.dos[done % guide.dos.length] : null;
+  const tipNot = guide?.donts.length ? guide.donts[done % guide.donts.length] : null;
+  const demo = q && moves && (
+    <button type="button" aria-label={`${q.name}: how to do it`} onClick={() => setPage(q)} className="press mt-4 block w-full overflow-hidden rounded-[24px] border border-white/10">
+      <BodyDemo move={q.move} name={q.name} className="h-[clamp(84px,calc(100dvh-640px),200px)] w-full" />
+    </button>
+  );
 
   return (
     <Screen tabs={false} glow="left-[-15px] top-[120px]" mood={restLeft > 0 ? 'rest' : 'work'} view={restLeft > 0 ? 'rest' : (q?.id ?? 'end')}>
@@ -144,18 +177,24 @@ export function Workout({ state, update, onFinish, onLeave, onDrop, cheer, onChe
               </span>
             )}
           </Ring>
-          {q && <span className="mt-6 text-[14px] text-ink-faint">Next: {q.name}</span>}
+          {q && (
+            <span className="mt-6 flex items-center gap-3 text-[14px] text-ink-faint">
+              {moves && <BodyDemo small move={q.move} name={q.name} className="h-[44px] w-[44px] rounded-[12px]" />}
+              Next: {q.name}
+            </span>
+          )}
           <Button kind="glass" className="mt-auto w-full" onClick={() => update(skipRest)}>
             Skip rest
           </Button>
         </div>
       ) : q ? (
         <>
-          <span className="mt-12 text-center text-[15px] text-ink-muted">{q.name}</span>
+          {demo}
+          <span className={`${moves ? 'mt-4' : 'mt-12'} text-center text-[15px] text-ink-muted`}>{q.name}</span>
 
           {isTap(q) ? (
             <div className="mt-6 flex flex-col items-center gap-5 px-4 text-center">
-              <Ring of={1} done={0} label={q.name}>
+              <Ring size={moves ? 200 : undefined} of={1} done={0} label={q.name}>
                 <span className="num font-display text-[72px] font-normal leading-[76px] tracking-[-2.5px]">
                   {q.reps}
                   <span className="text-[32px] text-ink-muted">{unit}</span>
@@ -165,12 +204,28 @@ export function Workout({ state, update, onFinish, onLeave, onDrop, cheer, onChe
             </div>
           ) : (
             <>
-              <div className="mt-6 flex items-center justify-between">
+              {(tipDo || tipNot) && (
+                <div className="mt-3 flex flex-col gap-1.5 px-1 text-[13px] leading-[18px] text-ink-soft">
+                  {tipDo && (
+                    <span className="flex items-start gap-2.5">
+                      <Check size={14} strokeWidth={2.25} aria-hidden className="mt-0.5 shrink-0 text-accent-iris" />
+                      {tipDo}
+                    </span>
+                  )}
+                  {tipNot && (
+                    <span className="flex items-start gap-2.5 text-ink-muted">
+                      <X size={14} strokeWidth={2.25} aria-hidden className="mt-0.5 shrink-0" />
+                      {tipNot}
+                    </span>
+                  )}
+                </div>
+              )}
+              <div className={`${moves ? 'mt-4' : 'mt-6'} flex items-center justify-between`}>
                 <button type="button" aria-label="One less" onClick={() => setReps((r) => Math.max(0, r - (q.unit === 'sec' ? 5 : 1)))} className="glass press h-[52px] w-[52px] shrink-0 rounded-full text-[24px]">
                   −
                 </button>
-                <Ring size={232} of={q.sets} done={done} label={`Set ${done + 1} of ${q.sets}`}>
-                  <span key={reps} className={`pop num font-display text-[104px] font-normal leading-[104px] tracking-[-4px] ${ahead ? 'best-num' : ''}`}>
+                <Ring size={moves ? 176 : 232} of={q.sets} done={done} label={`Set ${done + 1} of ${q.sets}`}>
+                  <span key={reps} className={`pop num font-display font-normal ${moves ? 'text-[76px] leading-[78px] tracking-[-3px]' : 'text-[104px] leading-[104px] tracking-[-4px]'} ${ahead ? 'best-num' : ''}`}>
                     {reps}
                     {unit && <span className="text-[40px] tracking-normal text-ink-muted">{unit}</span>}
                   </span>
@@ -180,10 +235,10 @@ export function Workout({ state, update, onFinish, onLeave, onDrop, cheer, onChe
                   +
                 </button>
               </div>
-              <span className="mt-4 text-center text-[13px] text-ink-faint">
+              <span className="mt-3 text-center text-[13px] text-ink-faint">
                 Set {Math.min(done + 1, q.sets)} of {q.sets}
               </span>
-              <div className="mt-8">
+              <div className={moves ? 'mt-5' : 'mt-8'}>
                 <Segmented label="How it felt" options={FEEL} value={feel} onChange={setFeel} />
               </div>
             </>
@@ -213,6 +268,8 @@ export function Workout({ state, update, onFinish, onLeave, onDrop, cheer, onChe
           </Button>
         </div>
       )}
+
+      {page && <ExercisePage q={page} onClose={closePage} />}
 
       {menu && (
         <div className="fade fixed inset-0 z-30 flex items-end bg-black/55 px-4 pb-8" onClick={() => setMenu(false)}>
