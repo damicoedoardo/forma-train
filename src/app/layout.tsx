@@ -3,6 +3,7 @@ import type { Metadata, Viewport } from 'next';
 import { Analytics } from '@/platform/pwa/Analytics';
 import { ServiceWorker } from '@/platform/pwa/ServiceWorker';
 import { ViewportHeal } from '@/platform/pwa/ViewportHeal';
+import { Keyboard } from '@/platform/pwa/Keyboard';
 import { Intro } from '@/ui/Intro';
 import './globals.css';
 
@@ -42,6 +43,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <Intro />
         <ServiceWorker />
         <ViewportHeal />
+        <Keyboard />
         <Analytics />
       </body>
     </html>

@@ -39,7 +39,9 @@ tools.
   split a built-in title for screens.
 - **Screens** (`ui/`): `Setup.tsx` is the first open, six questions (name, what you train, what
   for, days, minutes, gear) into `quickAnswers` and `applySetup`; the rest of the profile starts
-  in the middle and the coach learns it. `CoachTab.tsx` is the Week and the Chat. `useCoach.ts`
+  in the middle and the coach learns it. `CoachTab.tsx` is the Week and the Chat (the tab is locked to the phone's height: only the week or
+  the chat list scrolls, and the message bar rides on the keyboard). Its "This week" count is
+  `weekTally`, which falls back to the days a week picked at setup. `useCoach.ts`
   keeps two weeks planned (`useCoachPlan`), lets the coach replan a due week on its own once
   signed in (`useCoachAutoPlan`), and runs the chat (`useCoachChat`). While the coach works, the
   chat shows a small `CoachOrb` weaving beside the current tool step.

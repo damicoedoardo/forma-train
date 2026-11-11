@@ -18,8 +18,30 @@ function isField(el: EventTarget | null): boolean {
  *
  * Hiding the page also starts every CSS animation on it over (a screen's parts rise in again), which
  * looks like the app blinking. So it only runs after the keyboard has really been up, never just
- * because the app was opened or brought back.
+ * because the app was opened or brought back, and each animation is put back where it was
+ * (`keepAnimations`), so nothing plays again.
  */
+/** Notes where every CSS animation on the page is; the returned call moves the fresh copies (after
+    the page was hidden and shown) to the same point, before the next frame is drawn. */
+function keepAnimations(): () => void {
+  if (typeof document.getAnimations !== 'function') return () => {};
+  const at = new Map<Element, Map<string, CSSNumberish | null>>();
+  for (const a of document.getAnimations()) {
+    const el = a.effect instanceof KeyframeEffect ? a.effect.target : null;
+    if (!(a instanceof CSSAnimation) || !el) continue;
+    if (!at.has(el)) at.set(el, new Map());
+    at.get(el)!.set(a.animationName, a.currentTime);
+  }
+  return () => {
+    for (const a of document.getAnimations()) {
+      const el = a.effect instanceof KeyframeEffect ? a.effect.target : null;
+      if (!(a instanceof CSSAnimation) || !el) continue;
+      const t = at.get(el)?.get(a.animationName);
+      if (t !== undefined && t !== null) a.currentTime = t;
+    }
+  };
+}
+
 export function ViewportHeal() {
   useEffect(() => {
     const standalone = window.matchMedia('(display-mode: standalone)').matches || (navigator as Navigator & { standalone?: boolean }).standalone === true;
@@ -33,9 +55,11 @@ export function ViewportHeal() {
       const body = document.body;
       // The page scrolls inside the body, and hiding it drops that scroll too.
       const top = body.scrollTop;
+      const put = keepAnimations();
       body.style.display = 'none';
       void body.offsetHeight;
       body.style.display = '';
+      put();
       window.scrollTo(x, y);
       body.scrollTop = top;
     };

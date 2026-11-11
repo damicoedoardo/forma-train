@@ -121,7 +121,7 @@ export default function Home() {
 
   const toYou = () => setTab('you');
   return (
-    <Screen view={tab} bar={<TabBar tab={tab} onChange={setTab} />} glow={tab === 'friends' ? '-right-52 top-64' : tab === 'coach' ? 'left-1/3 -top-56' : tab === 'you' ? 'left-[-15px] -top-48' : '-left-10 -top-44'}>
+    <Screen view={tab} fit={tab === 'coach'} className={tab === 'coach' ? 'kb-fit' : ''} bar={<TabBar tab={tab} onChange={setTab} />} glow={tab === 'friends' ? '-right-52 top-64' : tab === 'coach' ? 'left-1/3 -top-56' : tab === 'you' ? 'left-[-15px] -top-48' : '-left-10 -top-44'}>
       {tab === 'today' && (
         <Today
           state={state}

@@ -23,7 +23,7 @@ export function After({ state, session, title, startedAt, update, onDone, onShar
   const took = new Date(session.date).getTime() - new Date(startedAt).getTime();
   const done = session.entries.filter((e) => e.of).reduce((a, e) => a + e.sets.length, 0);
   const of = session.entries.reduce((a, e) => a + (e.of ?? 0), 0);
-  const tally = weekTally(state.coach?.week, now, sessionsThisWeek(state, now), WEEKLY_GOAL);
+  const tally = weekTally(state.coach?.week, now, sessionsThisWeek(state, now), state.coach?.profile?.days ?? WEEKLY_GOAL);
   const up = [...(session.raised ?? []), ...(session.heavier ?? [])];
   const felt = state.sessions.find((s) => s.id === session.id)?.felt ?? null;
 
