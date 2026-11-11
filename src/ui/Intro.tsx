@@ -68,7 +68,7 @@ export function Intro() {
                   d={arc(-126 + 72 * i, 76)}
                   pathLength={1}
                   className="intro-part"
-                  style={{ animationDelay: `${180 + i * 130}ms` }}
+                  style={{ animationDelay: `${180 + (4 - i) * 130}ms` }}
                   fill="none"
                   stroke={i === 3 ? '#8C84F3' : '#ECECEF'}
                   strokeWidth="13"
