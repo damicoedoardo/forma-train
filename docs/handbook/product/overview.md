@@ -20,8 +20,7 @@ first, then friends.
 
 ## The four tabs
 
-- **Today**: the next workout and Start, the week at a glance (tap it for this week and next,
-  day by day), the coach's one line.
+- **Today**: the next workout and Start, the week at a glance (tap a day to see its workout), the coach's one line.
 - **Coach**: the chat with the coach, which plans and changes the week.
 - **Friends**: who is training now (Cheer), friends, and the feed of shared workouts.
 - **You**: your profile, your numbers and past workouts.

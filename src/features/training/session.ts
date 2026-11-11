@@ -199,6 +199,11 @@ function fromItem(state: TrainingState, it: PlanItem): WorkoutExercise {
  * The next workout: the coach's next planned day, else the built-in plan's day. A rough day keeps
  * the warm-up and the stretch around one exercise of at most 3 sets.
  */
+/** A planned day's workout (another day of the week, to look at on Today). */
+export function planWorkout(state: TrainingState, plan: { items: PlanItem[] }): WorkoutExercise[] {
+  return plan.items.filter((it) => !it.skipped).map((it) => fromItem(state, it));
+}
+
 export function todaysWorkout(state: TrainingState, checkin: Checkin = state.draft?.checkin ?? 'normal'): WorkoutExercise[] {
   const plan = currentPlan(state.coach);
   const list = plan ? plan.items.filter((it) => !it.skipped).map((it) => fromItem(state, it)) : PLAN[state.profile.kit ?? 'gym'][dayType(state)].map((s) => exercise(state, s));
