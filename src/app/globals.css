@@ -139,3 +139,7 @@ html[data-keyboard] .kb-fit { height: var(--vvh); top: var(--vvtop); padding-bot
    Transitions, not animations, so they don't play again when the iPhone keyboard fix redraws. */
 .welcome-mark { transition: transform 900ms cubic-bezier(0.2, 0.7, 0.2, 1); }
 .welcome-form { transition: opacity 700ms ease-out 250ms, transform 800ms cubic-bezier(0.2, 0.7, 0.2, 1) 250ms; }
+
+/* The coach typing (the first-open chat): three dots rise in turn. */
+@keyframes typing-dot { 0%, 60%, 100% { opacity: 0.35; transform: none; } 30% { opacity: 1; transform: translateY(-3px); } }
+.typing-dot { animation: typing-dot 1.1s ease-in-out infinite; }

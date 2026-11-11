@@ -32,6 +32,7 @@ like a pixel RPG. This app keeps the coach, the workout flow, the exercise libra
 side, and leaves the game behind: no XP, levels, story, the Fog, gear, parties or voice. The port
 plan is the doc "Training app porting plan"; the screens are the canvas "Training app screens".
 
-**Status (2026-11-10):** the whole app runs on the phone: the six-question setup, Today, the
+**Status (2026-11-10):** the whole app runs on the phone: the six-question setup (a short chat with the coach, one tap an
+answer), Today, the
 workout, the screen after it, the coach's week, and You. The coach chat, friends, cheers, the
 feed and the backup need sign-in, which waits on Supabase and the server (not set up yet).
