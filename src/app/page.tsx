@@ -19,7 +19,7 @@ import { useCoachAutoPlan, useCoachPlan } from '@/features/coach/ui/useCoach';
 import { trainingLabel } from '@/features/social/cheers';
 import { workoutCard } from '@/features/social/feed';
 import { codeInUrl } from '@/features/social/friends';
-import { addFriend, sharePost } from '@/features/social/client';
+import { addFriend, forgetSocial, sharePost } from '@/features/social/client';
 import { useSocial } from '@/features/social/ui/useSocial';
 import { FriendsTab } from '@/features/social/ui/FriendsTab';
 import { useCloudSync } from '@/features/account/ui/useCloudSync';
@@ -46,7 +46,7 @@ export default function Home() {
   const [tab, setTab] = useState<Tab>('today');
   const [after, setAfter] = useState<Finished | null>(null);
   const [redo, setRedo] = useState(false);
-  const { signedIn } = useCloudStatus();
+  const { signedIn, known } = useCloudStatus();
   const entry = useDoor(inSandbox());
   const training = state.draft?.open ? trainingLabel(state) : null;
   const social = useSocial(state, signedIn, training);
@@ -59,6 +59,11 @@ export default function Home() {
   useEffect(() => {
     if (ready) update((s) => closeStaleDraft(s, new Date()));
   }, [ready, update]);
+
+  // Signed out: drop the friends and feed this phone kept.
+  useEffect(() => {
+    if (known && !signedIn) forgetSocial();
+  }, [known, signedIn]);
 
   // An invite link: add the friend once signed in, then tidy the address.
   useEffect(() => {

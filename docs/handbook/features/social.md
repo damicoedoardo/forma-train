@@ -3,7 +3,7 @@ type: conceptual
 title: Social
 description: Friends by code, the card and heartbeat, cheers sent mid-workout, the feed of shared workouts with fire and comments, and photos.
 tags: [social, friends, cheers, feed, profile]
-timestamp: 2026-11-10
+timestamp: 2026-11-11
 ---
 
 # Social
@@ -21,11 +21,14 @@ timestamp: 2026-11-10
   exercises, records), `FEED_LIMIT`, and `newPosts`.
 - **`client.ts`**: every call (card, friends, profile and photo, cheers, feed, fire, comments),
   photos fetched once as blob links, and `shrinkPhoto` (an `<img>` decodes it, so phone photos
-  stay upright).
+  stay upright). The last friends list and first feed page are kept (`keptFriends`,
+  `keptFeed`, key `forma-train-social-v1`) so the tab opens on them with no "Loading", and
+  dropped on sign-out (`forgetSocial`, called from `app/page.tsx`).
 - **`ui/useSocial.ts`**: while signed in, sends your card every 30 s (the heartbeat that shows
-  you online), fetches cheers every 15 s while you train, and loads your own profile.
-- **`ui/FriendsTab.tsx`**: Friends (training now with Cheer, asks to accept, the list, add by
-  code or invite link, a friend's sheet with their numbers) and Feed (posts with photo, numbers,
+  you online), fetches cheers every 15 s while you train, loads your own profile, and fetches friends and
+  the feed once early so the Friends tab has them.
+- **`ui/FriendsTab.tsx`**: Friends (training now with Cheer, asks to accept, the list, "Add a friend"
+  at the foot of the screen (code or invite link), a friend's sheet with their numbers) and Feed (posts with photo, numbers,
   fire and comments).
 
 The limits in `friends.ts`, `cheers.ts` and `feed.ts` match the server's: change both together.

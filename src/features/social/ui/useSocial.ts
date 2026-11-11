@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { TrainingState } from '@/features/training/session';
 import type { Cheer } from '../cheers';
 import { myCard } from '../friends';
-import { getFriends, profilePhotoUrl, sendCard, takeCheers } from '../client';
+import { getFeed, getFriends, profilePhotoUrl, sendCard, takeCheers } from '../client';
 
 export interface Me {
   place: string;
@@ -28,6 +28,13 @@ export function useSocial(state: TrainingState, signedIn: boolean, training: str
   const [asked, setAsked] = useState(0);
   const latest = useRef(state);
   latest.current = state;
+
+  // Signed in: fetch friends and the feed once early, so the Friends tab opens on them.
+  useEffect(() => {
+    if (!signedIn) return;
+    getFriends().catch(() => {});
+    getFeed().catch(() => {});
+  }, [signedIn]);
 
   useEffect(() => {
     if (!signedIn) return;

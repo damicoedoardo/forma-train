@@ -22,7 +22,7 @@ first, then friends.
 
 - **Today**: the next workout and Start, the week at a glance (tap a day to see its workout), the coach's one line.
 - **Coach**: the chat with the coach, which plans and changes the week.
-- **Friends**: who is training now (Cheer), friends, and the feed of shared workouts.
+- **Friends**: who is training now (Cheer), friends, and the feed of shared workouts. It opens on what you saw last, with no loading, and forgets it when you sign out.
 - **You**: your profile, your numbers and past workouts.
 
 ## Where it came from
